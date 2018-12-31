@@ -67,7 +67,7 @@ function(e){
     }
     // mouse position minus elm position is mouseposition relative to element:
     mouse_x = (m_posx-e_posx); 
-    mouse_y = (m_posx-e_posx);
+    mouse_y = (m_posy-e_posy);
 }
 , false);
 
@@ -138,6 +138,7 @@ function do_update(instruction_data) {
             element.style.left = instruction_data[instr_i].params.left + 'px'; 
             element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].params.backgroundImage; 
+            element.style.zIndex=instruction_data[instr_i].params.zIndex; 
         }
         if(instruction_data[instr_i].instruction  == "del_obj")
         {
@@ -154,6 +155,7 @@ function do_update(instruction_data) {
             element.style.left = instruction_data[instr_i].params.left + 'px'; 
             element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].params.backgroundImage; 
+            element.style.zIndex=instruction_data[instr_i].params.zIndex; 
         }
     }
     return "OK"
