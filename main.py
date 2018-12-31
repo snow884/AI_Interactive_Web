@@ -45,19 +45,19 @@ def my_update(controls, objects, context):
         objects[1]['position'] = "absolute" 
         objects[1]['top'] = 100+math.cos(context["time"]/1000+3.14/2)*100
         objects[1]['left'] = 100+math.sin(context["time"]/1000+3.14/2)*100
-        objects[1]['backgroundColor'] = "red"
-        objects[1]['backgroundImage'] = ""
+        objects[1]['backgroundColor'] = ""
+        objects[1]['backgroundImage'] = 'url("/img/plane2_orig.png")'
     
     context["time"] = context["time"] + 1
     
     objects[0]['id'] = "obj0"
-    objects[0]['width'] = 50
+    objects[0]['width'] = 50 
     objects[0]['height'] = 50 
     objects[0]['position'] = "absolute" 
     objects[0]['top'] = 100+math.cos(context["time"]/10)*100
     objects[0]['left'] = 100+math.sin(context["time"]/10)*100
-    objects[0]['backgroundColor'] = "red"
-    objects[0]['backgroundImage'] = ""
+    objects[0]['backgroundColor'] = ""
+    objects[0]['backgroundImage'] = 'url("/img/plane2_orig.png")'
     
     objects[1]['id'] = "obj1"
     objects[1]['width'] = 50
@@ -65,8 +65,8 @@ def my_update(controls, objects, context):
     objects[1]['position'] = "absolute" 
     objects[1]['top'] = 100+math.cos(context["time"]/10+3.14/2)*100
     objects[1]['left'] = 100+math.sin(context["time"]/10+3.14/2)*100
-    objects[1]['backgroundColor'] = "red"
-    objects[1]['backgroundImage'] = ""
+    objects[1]['backgroundColor'] = ""
+    objects[1]['backgroundImage'] = 'url("/img/plane_orig.png")' 
     
     return objects, context
     
@@ -142,19 +142,6 @@ class my_environment:
         
         return(instruction_list)
         
-class grp_object:
-    
-    def __init__(self):
-
-        self.id="";
-        self.width = 50; 
-        self.height = 50; 
-        self.position = "absolute"; 
-        self.top = 0; 
-        self.left = 0; 
-        self.backgroundColor = "red";
-        self.backgroundImage = ""; 
-
 global env_list
 
 env_list = []
@@ -167,13 +154,8 @@ app.secret_key = "super secret key"
 def update():
     
     if request.method == "POST":
-        
         control_data = request.get_json()
-        
-        print(control_data)
-        
         json_out = json.dumps( env_list[0].update(control_data) )
-        
         return( json.dumps( json_out ) )
         
     return("ERROR")
@@ -182,9 +164,7 @@ def update():
 def redraw():
     
     if request.method == "POST":
-        
         json_out = json.dumps( env_list[0].redraw() )
-        
         return( json.dumps( json_out ) )
     
     return("ERROR")
@@ -192,10 +172,14 @@ def redraw():
 @app.route("/", methods=['GET', 'POST'])
 def index():
     session["user_id"] = len(env_list)
-    
     env_list.append( my_environment(my_update, my_init) )
     
     return render_template("index.html")
+
+@app.route("/img/<img_file>", methods=['GET', 'POST'])
+def get_img(img_file):
+    
+    return send_file("img/"+img_file, mimetype='image/png')
 
 if __name__ == "__main__":
     app.run()

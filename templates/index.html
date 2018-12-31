@@ -6,29 +6,15 @@
   position: relative;
   background: yellow;
 }
-#myAnimation {
-  width: 50px;
-  height: 50px;
-  position: absolute;
-  background-color: red;
-}
 </style>
 <style type="text/css">#tryitLeaderboard ~ #container { top: 48px!important; }
 #tryitLeaderboard ~ .trytopnav { top: 0!important; }</style></head><body>
 
-<p>
-<button onclick="myMove()">Click Me</button> 
-</p>
 
 <div id="myContainer">
-<div id="myAnimation"></div>
 </div>
 
-<form action="index" method="post">
-      <label>Name:<input type="text" id="name" value="" /></label>
-      <button type="button" id="btn-post" onclick="do_ajax();">Click</button>
-      <div id="result"></div>
-</form>
+<div id="result"></div>
     
 <script>
 
@@ -84,8 +70,6 @@ function(e){
     mouse_y = (m_posx-e_posx);
 }
 , false);
-
-do_redraw()
 
 function do_redraw() {
     var req = new XMLHttpRequest();
@@ -175,19 +159,16 @@ function do_update(instruction_data) {
     return "OK"
 }
       
-function myMove() {
-  var id = setInterval(refresh, 100);
+function myAnimation() {
+  var id = setInterval(refresh, 50);
   function refresh() {
-    if (pos == 350) {
-      clearInterval(id);
-    } else {
       do_ajax()
-      pos++; 
-      elem.style.top = pos + 'px'; 
-      elem.style.left = pos + 'px'; 
-    }
-  }
+   }
 }
+
+do_redraw()
+myAnimation()
+
 </script>
 
 </body></html>
