@@ -1,24 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Dec 30 19:49:18 2018
+Created on Tue Jan  1 17:33:01 2019
 
 @author: ivanskya
 """
-
-from flask import Flask, request, render_template, session
-from flask import send_file
-
-import json
-
-import math
-import random
-
-from threading import Timer
-from time import sleep
-
-import signal
-import sys
 
 def my_init():
     
@@ -314,62 +300,7 @@ class my_environment:
         self.map.close()
         
         return(False)
-
-global global_environment 
-
-with my_environment(my_update, my_init) as env1:
-    global_environment = my_environment(my_update, my_init)
-    app = Flask(__name__)
-    app.debug = True
-    app.secret_key = "super secret key"
-
-@app.route("/update", methods=['GET', 'POST'])
-def update():
-    global global_environment
-    if request.method == "POST":
-        control_data = request.get_json()
-        json_out = json.dumps( global_environment.update(session['user_id'], control_data) )
-        return( json.dumps( json_out ) )
-        
-    return("ERROR")
-    
-@app.route("/redraw", methods=['GET', 'POST'])
-def redraw():
-    global global_environment
-    if request.method == "POST":
-        json_out = json.dumps( global_environment.redraw(session['user_id']) )
-        return( json.dumps( json_out ) )
-    
-    return("ERROR")
-
-@app.route('/login', methods=['GET', 'POST'])
-def do_login():
-    global global_environment
-    
-    session['stage'] = 2
-    
-    session['user_id'] = request.form['user_id']
-    
-    global_environment.add_player(session['user_id'])
-    
-    return index()
-
-@app.route("/", methods=['GET', 'POST'])
-def index():
-    if not session.get('stage'):
-        return render_template('login.html')
-    else:
-        if (not(session['stage']==2)):
-            return render_template('login.html')
-        else:
-            session['stage']=1
-            return render_template("index.html")
-
-@app.route("/get_image/<img_file>", methods=['GET', 'POST'])
-def get_img(img_file):
-    
-    return send_file("img/rotations/"+img_file, mimetype='image/png')
-
 if __name__ == "__main__":
     
-    app.run()
+    with my_environment(my_update, my_init) as env1:
+        global_environment = my_environment(my_update, my_init)
