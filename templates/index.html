@@ -21,6 +21,7 @@
 var keys = [];
 var mouse_x = 0;
 var mouse_y = 0;
+var mouseDown = 0;
 
 window.addEventListener("keydown",
     function(e){
@@ -41,6 +42,13 @@ function getNumberArray(arr){
         }
     }
     return newArr;
+}
+
+document.body.onmousedown = function() { 
+  ++mouseDown;
+}
+document.body.onmouseup = function() {
+  --mouseDown;
 }
 
 window.addEventListener('mousemove', 
@@ -101,6 +109,7 @@ function do_ajax() {
     data["keys_pressed"]=(getNumberArray(keys));
     data["mouse_x"]=mouse_x;
     data["mouse_y"]=mouse_y;
+    data["mouseDown"]=mouseDown
     
     req.onreadystatechange = function()
     {
