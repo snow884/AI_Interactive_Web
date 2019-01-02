@@ -14,6 +14,8 @@ import time
 import redis
 import json
 
+import numpy as np
+
 obj_data_queue = redis.Redis(host='localhost', port=6379, db=0)
 con_data_queue = redis.Redis(host='localhost', port=6379, db=1)
 user_data_queue = redis.Redis(host='localhost', port=6379, db=2)
@@ -84,6 +86,9 @@ class Map_object:
     def update_pos(self, dt):
         self.world_x = self.world_x + int(self.world_vx)*dt
         self.world_y = self.world_y + int(self.world_vy)*dt
+
+    def collide(self, other_id):
+        pass
     
     def __str__(self):
         my_str = (
@@ -103,6 +108,9 @@ class Sphere_blue(Map_object):
         return('url("get_image/sphere_blue_orig_'+str(int(self.rotation/10)*10)+'.png")')
 
     def update_state(self,dt):
+        pass
+    
+    def collide(self, other_id):
         pass
     
 class Orb(Map_object):
@@ -222,7 +230,7 @@ class World_map:
         print('adding ' + my_object.object_id)
         
         return 0
-
+        
     def update(self):
         
         #update objects
@@ -247,9 +255,11 @@ class World_map:
         
         player_obj_list = [el for el in self.object_list if (el.object_type=='player')]
         
+        all_visible_object_ids = []
+        
         for player_obj in player_obj_list:
             
-            objects_out = self.get_objects(player_obj.world_x,player_obj.world_y,400,400)
+            object_ids, objects_out = self.get_objects(player_obj.world_x,player_obj.world_y,400,400)
             
             objects = []
             
@@ -265,25 +275,45 @@ class World_map:
                 objects[len(objects)-1]['backgroundColor'] = ""
                 objects[len(objects)-1]['backgroundImage'] = obj_out.get_image()
                 objects[len(objects)-1]['zIndex'] = obj_out.z_index
-                
+            
+            all_visible_object_ids+=object_ids
+            
             logging_info = log_queue.get(player_obj.object_id)
             if not(logging_info is None):
                 print(player_obj.object_id + ': ' + str(logging_info))
                 
             obj_data_queue.set(player_obj.object_id ,json.dumps(objects), px = 200 )
             
+        self.handle_coliditions( list(dict.fromkeys(all_visible_object_ids)) )
+            
     def get_objects(self, x_center, y_center, box_h, box_w):    
         
-        obj_out = [el for el in self.object_list if (
+        np_obj_out = [[el_id, el] for el_id, el in enumerate(self.object_list) if (
                 (el.world_x > x_center - box_h / 2)&
                 (el.world_x < x_center + box_h / 2)&
                 (el.world_y > y_center - box_w / 2)&
                 (el.world_y < y_center + box_w / 2)
             )]
         
-        return(obj_out)
+        return(list(np_obj_out[:,0]),list(np_obj_out[:,1]))
         
-
+    def handle_colisions(self, all_visible_object_ids):
+        
+        x_coords = np.array( [obj_out.world_x for obj_out in self.object_list[all_visible_object_ids]] )
+        y_coords = np.array( [obj_out.world_y for obj_out in self.object_list[all_visible_object_ids]] )
+        col_sz = np.array( [obj_out.col_sz for obj_out in self.object_list[all_visible_object_ids]] )
+        
+        x_coords_2D = np.tile( x_coords,(x_coords.shape[0],1) )
+        y_coords_2D = np.tile( y_coords,(y_coords.shape[0],1) )
+        col_sz_2 = np.tile( col_sz,(col_sz.shape[0],1) )
+        
+        dist_mat2 = ( ( x_coords_2D - np.transpose(x_coords_2D) )**2 + ( y_coords_2D - np.transpose(y_coords_2D) )**2 )
+        
+        coliding_object_ids = np.argwhere( dist_mat2 < (col_sz_2 + np.transpose(col_sz_2)) )
+        
+        for colidion_id in coliding_object_ids.shape[0]:
+            self.object_list[all_visible_object_ids[coliding_object_ids[colidion_id,0]]].collide(all_visible_object_ids[coliding_object_ids[colidion_id,1]])
+        
 class my_environment:
 
     def __init__(self, update_function, init_function):
