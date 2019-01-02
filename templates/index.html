@@ -5,14 +5,29 @@
   height: 400px;
   position: relative;
   background: yellow;
+  z-index:2
 }
+
+#myFrame {
+  width: 500px;
+  height: 500px;
+  position: relative;
+  background-image: url("get_image/frame_orig_0.png");
+  z-index:1000
+}
+
 </style>
 <style type="text/css">#tryitLeaderboard ~ #container { top: 48px!important; }
 #tryitLeaderboard ~ .trytopnav { top: 0!important; }</style></head><body>
 
 
+
+
 <div id="myContainer">
+<div id="myFrame">
 </div>
+</div>
+
 
 <div id="result"></div>
     
@@ -114,10 +129,12 @@ function do_ajax() {
     req.onreadystatechange = function()
     {
         if(this.readyState == 4 && this.status == 200) {
-        
-            instruction_data = JSON.parse(JSON.parse(this.responseText))
             
-            result.innerHTML = this.responseText;
+            //result.innerHTML = this.responseText
+            
+            instruction_data = JSON.parse(this.responseText)
+            
+            //result.innerHTML = this.responseText;
             
             do_update(instruction_data)
             
