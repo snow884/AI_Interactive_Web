@@ -5,7 +5,7 @@
   height: 400px;
   position: relative;
   background: yellow;
-  z-index:2
+  z-index:2;
 }
 
 #myFrame {
@@ -13,7 +13,7 @@
   height: 500px;
   position: relative;
   background-image: url("get_image/frame_orig_0.png");
-  z-index:1000
+  z-index:1000;
 }
 
 </style>
@@ -37,6 +37,7 @@ var keys = [];
 var mouse_x = 0;
 var mouse_y = 0;
 var mouseDown = 0;
+var drawing_finished = 1
 
 window.addEventListener("keydown",
     function(e){
@@ -118,6 +119,7 @@ function do_redraw() {
 }
       
 function do_ajax() {
+    drawing_finished = 0
     var req = new XMLHttpRequest();
     
     var data = {};
@@ -146,10 +148,11 @@ function do_ajax() {
     req.open('POST', '/update', true);
     req.setRequestHeader("Content-Type", "application/json");
     req.send(JSON.stringify(data));
+    drawing_finished = 1
 }
       
 function do_update(instruction_data) {
-     
+    
     //result.innerHTML = instruction_data[0].params.id 
     for(var instr_i = 0; instr_i < instruction_data.length; instr_i++){
         if(instruction_data[instr_i].instruction == "new_obj")
@@ -174,23 +177,26 @@ function do_update(instruction_data) {
         if(instruction_data[instr_i].instruction == "mod_obj")
         {
             var element = document.getElementById( instruction_data[instr_i].params.id );
-            element.style.width = instruction_data[instr_i].params.width + 'px'; 
-            element.style.height = instruction_data[instr_i].params.height + 'px'; 
-            element.style.position = "absolute"; 
+            //element.style.width = instruction_data[instr_i].params.width + 'px'; 
+            //element.style.height = instruction_data[instr_i].params.height + 'px'; 
+            //element.style.position = "absolute"; 
             element.style.top = instruction_data[instr_i].params.top + 'px'; 
             element.style.left = instruction_data[instr_i].params.left + 'px'; 
-            element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
+            //element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].params.backgroundImage; 
-            element.style.zIndex=instruction_data[instr_i].params.zIndex; 
+            //element.style.zIndex=instruction_data[instr_i].params.zIndex; 
         }
     }
     return "OK"
 }
       
 function myAnimation() {
-  var id = setInterval(refresh, 50);
+  var id = setInterval(refresh, 100);
   function refresh() {
+  if (drawing_finished === 1)
+  {
       do_ajax()
+    }
    }
 }
 

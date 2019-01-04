@@ -43,6 +43,7 @@ def get_instr_update(objects_old, player_id):
     
     for object_new_curr in objects_new:
         if ( object_new_curr['id'] in [object_old['id'] for object_old in objects_old] ) :
+                        
             instruction = {"instruction": "mod_obj","params":object_new_curr}
             
             instruction_list.append(instruction)
@@ -127,4 +128,5 @@ def get_img(img_file):
     return send_file("img/rotations/"+img_file, mimetype='image/png')
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')
+    #app.run()

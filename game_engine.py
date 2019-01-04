@@ -66,7 +66,7 @@ def my_update(controls, player_id, map_in, context):
 
 class Map_object:
     
-    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, add_object):
+    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, add_object, col_sz):
         
         self.object_id = object_id
         self.object_type = object_type
@@ -79,6 +79,7 @@ class Map_object:
         self.sz_y = sz_y 
         self.z_index = z_index
         self.state = state      
+        self.col_sz = col_sz  
         
     def get_state(self):
         return(self.state)
@@ -87,7 +88,7 @@ class Map_object:
         self.world_x = self.world_x + int(self.world_vx)*dt
         self.world_y = self.world_y + int(self.world_vy)*dt
 
-    def collide(self, other_id):
+    def collide(self, other_obj):
         pass
     
     def __str__(self):
@@ -102,7 +103,7 @@ class Sphere_blue(Map_object):
     
     def __init__(self, object_id, world_x, world_y):
         
-        Map_object.__init__(self, object_id, 'sphere_blue', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', None)
+        Map_object.__init__(self, object_id, 'sphere_blue', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', None, 25)
         
     def get_image(self):
         return('url("get_image/sphere_blue_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -110,14 +111,15 @@ class Sphere_blue(Map_object):
     def update_state(self,dt):
         pass
     
-    def collide(self, other_id):
-        pass
+    def collide(self, other_obj):
+        if (other_obj.object_type=='orb'):
+            self.state = 'deleted'
     
 class Orb(Map_object):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
         
-        Map_object.__init__(self, object_id, 'orb', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', None)
+        Map_object.__init__(self, object_id, 'orb', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', None, 10)
         
         self.timer = 0 
         
@@ -129,11 +131,76 @@ class Orb(Map_object):
         
         if (self.timer>50):
             self.state = 'deleted'
+            
+    def collide(self, other_obj):
+        if (not(other_obj.object_type in ['player','map_tile', 'cloud'])):
+            self.state = 'deleted'
 
+class Cloud(Map_object):
+    
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        
+        Map_object.__init__(self, object_id, 'cloud', world_x, world_y, world_vx, world_vy, 50, 50, int(random.randint(0,35)*10), 10, 'generated', None, 25)
+        
+        self.timer = 0 
+        
+    def get_image(self):
+        return('url("get_image/cloud1_orig_'+str(int(self.rotation/10)*10)+'.png")')  
+    
+    def update_state(self,dt):
+        self.timer = self.timer + dt
+        
+        if (self.timer>50):
+            self.state = 'deleted'
+            
+    def collide(self, other_obj):
+        pass
+    
+class Map_tile(Map_object):
+    
+    def __init__(self, object_id, world_x, world_y, tile_coord_x, tile_coord_y, map_name ):
+        
+        Map_object.__init__(self, object_id, 'map_tile', world_x, world_y, 0, 0, 50, 50, 0, 1, 'generated', None, 0)
+        
+        self.timer = 0 
+        self.tile_coord_x = tile_coord_x
+        self.tile_coord_y = tile_coord_y
+        self.map_name = map_name
+        
+    def get_image(self):
+        return('url("get_image/'+self.map_name+'_'+str(self.tile_coord_x)+'_'+str(self.tile_coord_y)+'.png")')  
+    
+    def update_state(self,dt):
+        pass
+            
+    def collide(self, other_obj):
+        pass
+
+class Enemy(Map_object):
+    
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        
+        Map_object.__init__(self, object_id, 'enemy', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', None, 25)
+        
+        self.timer = 0 
+        
+    def get_image(self):
+        return('url("get_image/plane2_orig_'+str(int(self.rotation/10)*10)+'.png")')  
+    
+    def update_state(self,dt):
+        self.timer = self.timer + dt
+        
+        if (self.timer>50):
+            self.state = 'deleted'
+            
+    def collide(self, other_obj):
+        if (not(other_obj.object_type=='player')):
+            self.state = 'deleted'
+            
 class Player(Map_object):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy, new_object_func ):
-        Map_object.__init__(self, object_id, 'player', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'online', new_object_func)
+        Map_object.__init__(self, object_id, 'player', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'online', new_object_func, 25)
         self.new_object_func = new_object_func
         self.orb_counter = 0
         self.orb_timer = 0
@@ -168,8 +235,8 @@ class Player(Map_object):
             self.new_object_func(
                     Orb(
                             self.object_id + '_fire_' + str(self.orb_counter), 
-                            self.world_x, 
-                            self.world_y,
+                            self.world_x - math.cos(self.rotation/360*2*math.pi)*20, 
+                            self.world_y - math.sin(self.rotation/360*2*math.pi)*20,
                             - math.cos(self.rotation/360*2*math.pi)*10, 
                             - math.sin(self.rotation/360*2*math.pi)*10 
                         )
@@ -182,7 +249,14 @@ class Player(Map_object):
         
         if (self.orb_timer>10):
             self.orb_timer = 0
-            self.new_object_func(Orb(self.object_id + '_orb_' + str(self.orb_counter), self.world_x, self.world_y, 0, 0 ))
+            self.new_object_func(Cloud(
+                    self.object_id + '_cloud_' + str(self.orb_counter), 
+                    self.world_x+math.cos(self.rotation/360*2*math.pi)*25, 
+                    self.world_y+math.sin(self.rotation/360*2*math.pi)*25, 
+                    math.cos(self.rotation/360*2*math.pi)*2, 
+                    math.sin(self.rotation/360*2*math.pi)*2 
+                    )
+                    )
         
         self.orb_counter = self.orb_counter+1
         
@@ -211,7 +285,13 @@ class World_map:
                             random.randint(1,sz_y)
                             )
                     )
-        
+
+        for x_id in range(0,100):
+            for y_id in range(0,100):
+                self.object_list.append(
+                        Map_tile('maptile_'+str(x_id)+'_'+str(y_id), x_id*50, y_id*50, x_id, y_id, 'Map1' )
+                        )
+
     def iterate():
         pass
 
@@ -232,12 +312,6 @@ class World_map:
         return 0
         
     def update(self):
-        
-        #update objects
-        
-        for my_obj in self.object_list:
-            my_obj.update_pos(self.dt)
-            my_obj.update_state(self.dt)
         
         #delete expired objects
         
@@ -283,25 +357,36 @@ class World_map:
                 print(player_obj.object_id + ': ' + str(logging_info))
                 
             obj_data_queue.set(player_obj.object_id ,json.dumps(objects), px = 200 )
-            
+        
+        #handle colidions
+        
         self.handle_coliditions( list(dict.fromkeys(all_visible_object_ids)) )
-            
+        
+        #update objects
+        
+        #visible_ids_deduped = list(dict.fromkeys(all_visible_object_ids))
+        
+        #for obj_id in visible_ids_deduped:
+        for obj_id in range(0,len(self.object_list) ):
+            self.object_list[obj_id].update_pos(self.dt)
+            self.object_list[obj_id].update_state(self.dt)
+        
     def get_objects(self, x_center, y_center, box_h, box_w):    
         
-        np_obj_out = [[el_id, el] for el_id, el in enumerate(self.object_list) if (
+        np_obj_out = np.array( [[el_id, el] for el_id, el in enumerate(self.object_list) if (
                 (el.world_x > x_center - box_h / 2)&
                 (el.world_x < x_center + box_h / 2)&
                 (el.world_y > y_center - box_w / 2)&
                 (el.world_y < y_center + box_w / 2)
-            )]
+            )] )
         
         return(list(np_obj_out[:,0]),list(np_obj_out[:,1]))
         
-    def handle_colisions(self, all_visible_object_ids):
+    def handle_coliditions(self, all_visible_object_ids):
         
-        x_coords = np.array( [obj_out.world_x for obj_out in self.object_list[all_visible_object_ids]] )
-        y_coords = np.array( [obj_out.world_y for obj_out in self.object_list[all_visible_object_ids]] )
-        col_sz = np.array( [obj_out.col_sz for obj_out in self.object_list[all_visible_object_ids]] )
+        x_coords = np.array( [self.object_list[i_id].world_x for i_id in all_visible_object_ids])
+        y_coords = np.array( [self.object_list[i_id].world_y for i_id in all_visible_object_ids])
+        col_sz = np.array( [self.object_list[i_id].col_sz for i_id in all_visible_object_ids])
         
         x_coords_2D = np.tile( x_coords,(x_coords.shape[0],1) )
         y_coords_2D = np.tile( y_coords,(y_coords.shape[0],1) )
@@ -309,10 +394,11 @@ class World_map:
         
         dist_mat2 = ( ( x_coords_2D - np.transpose(x_coords_2D) )**2 + ( y_coords_2D - np.transpose(y_coords_2D) )**2 )
         
-        coliding_object_ids = np.argwhere( dist_mat2 < (col_sz_2 + np.transpose(col_sz_2)) )
+        coliding_object_ids = np.argwhere( dist_mat2 < (col_sz_2 + np.transpose(col_sz_2))**2 )
         
-        for colidion_id in coliding_object_ids.shape[0]:
-            self.object_list[all_visible_object_ids[coliding_object_ids[colidion_id,0]]].collide(all_visible_object_ids[coliding_object_ids[colidion_id,1]])
+        for colidion_id in range(0,coliding_object_ids.shape[0]):
+            if (not(coliding_object_ids[colidion_id,0] == coliding_object_ids[colidion_id,1])):
+                self.object_list[all_visible_object_ids[coliding_object_ids[colidion_id,0]]].collide(self.object_list[all_visible_object_ids[coliding_object_ids[colidion_id,1]]])
         
 class my_environment:
 
