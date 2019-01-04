@@ -31,31 +31,13 @@ def get_instr_update(objects_old, player_id):
     
     instruction_list = []
     
-    #create
-    
-    for object_new_curr in objects_new:
-        if ( not( object_new_curr['id'] in [object_old['id'] for object_old in objects_old] ) ) :
-            instruction = {"instruction": "new_obj","params":object_new_curr}
-            
-            instruction_list.append(instruction)
-            
     #update
     
     for object_new_curr in objects_new:
-        if ( object_new_curr['id'] in [object_old['id'] for object_old in objects_old] ) :
-                        
-            instruction = {"instruction": "mod_obj","params":object_new_curr}
-            
-            instruction_list.append(instruction)
-            
-    #delete
-    
-    for object_old_curr in objects_old:
-        if ( not( object_old_curr['id'] in [object_new['id'] for object_new in objects_new] ) ) :
-            
-            instruction = {"instruction": "del_obj","params":{"id":object_old_curr['id']}}
-            
-            instruction_list.append(instruction)
+
+        instruction = {"instruction": "mod_obj","params":object_new_curr}
+        
+        instruction_list.append(instruction)
     
     return(instruction_list, objects_new)
 
@@ -88,17 +70,7 @@ def update():
         return( json.dumps( instruction_list) )
         
     return("ERROR")
-    
-@app.route("/redraw", methods=['GET', 'POST'])
-def redraw():
-    
-    instruction_list, session['objects'] = get_instr_redraw(session['user_id'])
-    
-    if request.method == "POST":
-        log_queue.set(session['user_id'],instruction_list, px = 200)
-        return( json.dumps( instruction_list ) )
-    
-    return("ERROR")
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def do_login():

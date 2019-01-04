@@ -38,6 +38,7 @@ var mouse_x = 0;
 var mouse_y = 0;
 var mouseDown = 0;
 var drawing_finished = 1
+var synch_el_list = [];
 
 window.addEventListener("keydown",
     function(e){
@@ -153,9 +154,15 @@ function do_ajax() {
       
 function do_update(instruction_data) {
     
-    //result.innerHTML = instruction_data[0].params.id 
+    synch_el_exists = new Array(instruction_data.length).fill(0)
+    
     for(var instr_i = 0; instr_i < instruction_data.length; instr_i++){
-        if(instruction_data[instr_i].instruction == "new_obj")
+        
+        var found_index = synch_el_list.findIndex(function(element) {
+           return instruction_data[instr_i].id === element;
+        });
+        
+        if (found==-1)
         {
             var element = document.createElement("DIV"); 
             document.getElementById("myContainer").appendChild(element);
@@ -168,24 +175,29 @@ function do_update(instruction_data) {
             element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].params.backgroundImage; 
             element.style.zIndex=instruction_data[instr_i].params.zIndex; 
-        }
-        if(instruction_data[instr_i].instruction  == "del_obj")
+            
+            synch_el_list.push(instruction_data[instr_i].id)
+            
+        } else
         {
+            synch_el_exists[found_index] = 1
+        
             var element = document.getElementById( instruction_data[instr_i].params.id );
-            element.parentNode.removeChild(element);
-        }
-        if(instruction_data[instr_i].instruction == "mod_obj")
-        {
-            var element = document.getElementById( instruction_data[instr_i].params.id );
-            //element.style.width = instruction_data[instr_i].params.width + 'px'; 
-            //element.style.height = instruction_data[instr_i].params.height + 'px'; 
-            //element.style.position = "absolute"; 
+            element.style.width = instruction_data[instr_i].params.width + 'px'; 
+            element.style.height = instruction_data[instr_i].params.height + 'px'; 
+            element.style.position = "absolute"; 
             element.style.top = instruction_data[instr_i].params.top + 'px'; 
             element.style.left = instruction_data[instr_i].params.left + 'px'; 
-            //element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
+            element.style.backgroundColor = instruction_data[instr_i].params.backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].params.backgroundImage; 
-            //element.style.zIndex=instruction_data[instr_i].params.zIndex; 
+            element.style.zIndex=instruction_data[instr_i].params.zIndex; 
         }
+        
+        for (var i = synch_el_list.length - 1; i >= 0; i--)
+            if (synch_el_exists[i]===0) 
+            {
+                synch_el_exists.splice(i,1)
+            }
     }
     return "OK"
 }
