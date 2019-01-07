@@ -66,7 +66,7 @@ def my_update(controls, player_id, map_in, context):
 
 class Map_object:
     
-    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, add_object, col_sz):
+    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
         
         self.object_id = object_id
         self.object_type = object_type
@@ -80,14 +80,18 @@ class Map_object:
         self.z_index = z_index
         self.state = state      
         self.col_sz = col_sz  
+        self.new_object_func = new_object_func
         
     def get_state(self):
         return(self.state)
     
     def update_pos(self, dt):
-        self.world_x = self.world_x + int(self.world_vx)*dt
-        self.world_y = self.world_y + int(self.world_vy)*dt
-
+        self.world_x = self.world_x + (self.world_vx)*dt
+        self.world_y = self.world_y + (self.world_vy)*dt
+    
+    def update_state(self,dt):
+        pass
+    
     def collide(self, other_obj):
         pass
     
@@ -101,9 +105,9 @@ class Map_object:
 
 class Sphere_blue(Map_object):
     
-    def __init__(self, object_id, world_x, world_y):
+    def __init__(self, object_id, world_x, world_y, new_object_func):
         
-        Map_object.__init__(self, object_id, 'sphere_blue', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', None, 25)
+        Map_object.__init__(self, object_id, 'sphere_blue', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
         
     def get_image(self):
         return('url("get_image/sphere_blue_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -114,12 +118,62 @@ class Sphere_blue(Map_object):
     def collide(self, other_obj):
         if (other_obj.object_type=='orb'):
             self.state = 'deleted'
+            self.new_object_func(Health_box(
+                    self.object_id + '_health_drop', 
+                    self.world_x,
+                    self.world_y,
+                    self.new_object_func
+                    )
+                    )
+            
+class Health_box(Map_object):
+    
+    def __init__(self, object_id, world_x, world_y, new_object_func):
+        
+        Map_object.__init__(self, object_id, 'health_box', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        
+    def get_image(self):
+        return('url("get_image/health_box_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
+    def update_state(self,dt):
+        pass
+    
+    def collide(self, other_obj):
+        if (other_obj.object_type=='player'):
+            self.state = 'deleted'
+            self.new_object_func(Health_collected_floater(
+                    self.object_id + '_health_collected_floater', 
+                    self.world_x,
+                    self.world_y,
+                    self.new_object_func
+                    )
+                    )
+            
+class Health_collected_floater(Map_object):
+    
+    def __init__(self, object_id, world_x, world_y, new_object_func):
+        
+        Map_object.__init__(self, object_id, 'health_collected_floater', world_x, world_y, -3, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        
+        self.timer = 0 
+        
+    def get_image(self):
+        return('url("get_image/health_collected_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
+    def update_state(self,dt):
+        self.timer = self.timer + dt
+        
+        if (self.timer>5):
+            self.state = 'deleted'
+    
+    def collide(self, other_obj):
+        pass
     
 class Orb(Map_object):
     
-    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy, new_object_func ):
         
-        Map_object.__init__(self, object_id, 'orb', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', None, 10)
+        Map_object.__init__(self, object_id, 'orb', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', new_object_func, 10)
         
         self.timer = 0 
         
@@ -135,6 +189,14 @@ class Orb(Map_object):
     def collide(self, other_obj):
         if (not(other_obj.object_type in ['player','map_tile', 'cloud'])):
             self.state = 'deleted'
+            self.new_object_func(Cloud(
+                    self.object_id + '_cloud', 
+                    self.world_x, 
+                    self.world_y, 
+                    -3, 
+                    0
+                    )
+                    )
 
 class Cloud(Map_object):
     
@@ -176,32 +238,198 @@ class Map_tile(Map_object):
     def collide(self, other_obj):
         pass
 
-class Enemy(Map_object):
+class Enemy_tower_1(Map_object):
     
-    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+    def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
         
-        Map_object.__init__(self, object_id, 'enemy', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', None, 25)
+        Map_object.__init__(self, object_id, 'enemy_tower1', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
         
-        self.timer = 0 
+        self.search_timer = 0
+        self.fire_timer = 0
+        self.fire_interval = 20
+        
+        self.orb_counter = 0
+        
+        self.selected_target = None
+        
+        self.get_objects_func = get_objects_func
         
     def get_image(self):
-        return('url("get_image/plane2_orig_'+str(int(self.rotation/10)*10)+'.png")')  
+        return('url("get_image/tower1_orig_'+str(int(self.rotation/10)*10)+'.png")')  
     
-    def update_state(self,dt):
-        self.timer = self.timer + dt
+    def update_pos(self,dt):
+        self.search_timer = self.search_timer + dt
         
-        if (self.timer>50):
-            self.state = 'deleted'
+        if (self.search_timer > 20):
+            self.search_timer = 0
             
+            objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
+            
+            payers_nearby_list = np.array( [el for el in objects_nearby_list if (
+                    (el.object_type=='player')
+                )] )
+            
+            if (len(payers_nearby_list)>0):
+                self.selected_target = payers_nearby_list[0]
+            else:
+                self.selected_target = None
+                
+        else:
+            if ( not(self.selected_target is None) ):
+                
+                dist = pow(( self.world_x - self.selected_target.world_x )**2+( self.world_y - self.selected_target.world_y )**2,0.5)
+                
+                target_x = self.selected_target.world_x + dist/10*self.selected_target.world_vx
+                target_y = self.selected_target.world_y + dist/10*self.selected_target.world_vy
+                
+                my_angle = math.atan2( 
+                
+                        ( self.world_y - target_y ),
+                        ( self.world_x - target_x )
+                        )/math.pi*180+360
+                
+                rotation_increment = ( ((my_angle) - int( (my_angle) / 360 )*360) - (self.rotation) )
+                
+                if (abs(rotation_increment)<10):
+                    self.shoot()
+                else:
+                    self.rotation = self.rotation + (rotation_increment>0)*5*dt - (rotation_increment<0)*5*dt
+                
+    def shoot(self):
+        
+        if (not(self.fire_timer<self.fire_interval)):
+            
+            self.new_object_func(
+                    Orb(
+                            self.object_id + '_fire_' + str(self.orb_counter), 
+                            self.world_x - math.cos(self.rotation/360*2*math.pi)*40, 
+                            self.world_y - math.sin(self.rotation/360*2*math.pi)*40,
+                            - math.cos(self.rotation/360*2*math.pi)*10, 
+                            - math.sin(self.rotation/360*2*math.pi)*10,
+                            self.new_object_func
+                        )
+                    )
+            
+            self.fire_timer=0
+            
+            self.orb_counter = self.orb_counter+1
+            
+            if self.orb_counter > 100:
+                self.orb_counter = 0
+            
+    def update_state(self,dt):
+        if (self.fire_timer<20):
+            self.fire_timer = self.fire_timer + dt
+        
     def collide(self, other_obj):
-        if (not(other_obj.object_type=='player')):
+        if (other_obj.object_type=='orb'):
             self.state = 'deleted'
+
+class Enemy_tower_2(Enemy_tower_1):
+    
+    def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
+        Enemy_tower_1.__init__(self, object_id, world_x, world_y, new_object_func, get_objects_func )
+        self.object_type = 'enemy_tower2'
+        self.fire_interval = 10
+        
+    def get_image(self):
+        return('url("get_image/tower2_orig_'+str(int(self.rotation/10)*10)+'.png")') 
+    
+class Enemy_tower_3(Enemy_tower_1):
+    def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
+        Enemy_tower_1.__init__(self, object_id, world_x, world_y, new_object_func, get_objects_func )
+        self.object_type = 'enemy_tower3'
+        self.fire_interval = 5
+        
+    def get_image(self):
+        return('url("get_image/tower3_orig_'+str(int(self.rotation/10)*10)+'.png")') 
+        
+class Airship_1(Map_object):
+
+    def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
+        
+        Map_object.__init__(self, object_id, 'airship1', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        
+        self.search_timer = 0
+        
+        self.selected_target = None
+        
+        self.get_objects_func = get_objects_func
+        
+        self.speed = 1
+        
+    def update_pos(self,dt):
+        self.search_timer = self.search_timer + dt
+        
+        if (self.search_timer > 20):
+            self.search_timer = 0
             
+            objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
+            
+            payers_nearby_list = np.array( [el for el in objects_nearby_list if (
+                    (el.object_type=='player')
+                )] )
+            
+            if (len(payers_nearby_list)>0):
+                self.selected_target = payers_nearby_list[0]
+            else:
+                self.selected_target = None
+                
+        else:
+            if ( not(self.selected_target is None) ):
+                
+                dist = pow(( self.world_x - self.selected_target.world_x )**2+( self.world_y - self.selected_target.world_y )**2,0.5)
+                
+                target_x = self.selected_target.world_x + dist/10*self.selected_target.world_vx
+                target_y = self.selected_target.world_y + dist/10*self.selected_target.world_vy
+                
+                my_angle = math.atan2( 
+                
+                        ( self.world_y - target_y ),
+                        ( self.world_x - target_x )
+                        )/math.pi*180+360
+                
+                rotation_increment = ( ((my_angle) - int( (my_angle) / 360 )*360) - (self.rotation) )
+                
+                if (abs(rotation_increment)>10):
+                    self.rotation = self.rotation + (rotation_increment>0)*5*dt - (rotation_increment<0)*5*dt
+                
+            self.world_vx = - math.cos(self.rotation/360*2*math.pi)*self.speed
+            self.world_vy = - math.sin(self.rotation/360*2*math.pi)*self.speed
+            
+            self.world_x = self.world_x + self.world_vx*dt
+            self.world_y = self.world_y + self.world_vy*dt
+            
+    def get_image(self):
+        return('url("get_image/airship1_orig_'+str(int(self.rotation/10)*10)+'.png")') 
+
+    def collide(self, other_obj):
+        if (other_obj.object_type in ['orb','player']):
+            self.state = 'deleted'
+
+class Airship_2(Airship_1):
+    def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
+        Airship_1.__init__(self, object_id, world_x, world_y, new_object_func, get_objects_func )
+        self.object_type = 'airship2'
+        self.speed = 2
+        
+    def get_image(self):
+        return('url("get_image/airship2_orig_'+str(int(self.rotation/10)*10)+'.png")') 
+
+class Airship_3(Airship_1):
+    def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
+        Airship_1.__init__(self, object_id, world_x, world_y, new_object_func, get_objects_func )
+        self.object_type = 'airship3'
+        self.speed = 3.5
+
+    def get_image(self):
+        return('url("get_image/airship3_orig_'+str(int(self.rotation/10)*10)+'.png")')   
+
 class Player(Map_object):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy, new_object_func ):
         Map_object.__init__(self, object_id, 'player', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'online', new_object_func, 25)
-        self.new_object_func = new_object_func
+        self.no_input_count = 0
         self.orb_counter = 0
         self.orb_timer = 0
         self.fire_timer = 0
@@ -214,16 +442,22 @@ class Player(Map_object):
         controls_raw = con_data_queue.get(str(self.object_id))
         
         if not(controls_raw is None):
+            
+            self.no_input_count = 0
+            
             controls = json.loads( controls_raw )
-                
+            
             angle = 180+10*int(math.atan2(float(controls["mouse_x"])-200, float(controls["mouse_y"])-200)/(2*math.pi)*360/10)
             
             self.rotation = angle
-            self.world_vx = - math.cos(angle/360*2*math.pi)*1
-            self.world_vy = - math.sin(angle/360*2*math.pi)*1
+            self.world_vx = - math.cos(angle/360*2*math.pi)*3
+            self.world_vy = - math.sin(angle/360*2*math.pi)*3
             
             if (controls["mouseDown"]>0):
                 self.shoot()
+            
+        else:
+            self.no_input_count = self.no_input_count + 1
             
         self.world_x = self.world_x + self.world_vx*dt
         self.world_y = self.world_y + self.world_vy*dt
@@ -238,7 +472,8 @@ class Player(Map_object):
                             self.world_x - math.cos(self.rotation/360*2*math.pi)*20, 
                             self.world_y - math.sin(self.rotation/360*2*math.pi)*20,
                             - math.cos(self.rotation/360*2*math.pi)*10, 
-                            - math.sin(self.rotation/360*2*math.pi)*10 
+                            - math.sin(self.rotation/360*2*math.pi)*10,
+                            self.new_object_func
                         )
                     )
             
@@ -249,14 +484,15 @@ class Player(Map_object):
         
         if (self.orb_timer>10):
             self.orb_timer = 0
-            self.new_object_func(Cloud(
-                    self.object_id + '_cloud_' + str(self.orb_counter), 
-                    self.world_x+math.cos(self.rotation/360*2*math.pi)*25, 
-                    self.world_y+math.sin(self.rotation/360*2*math.pi)*25, 
-                    math.cos(self.rotation/360*2*math.pi)*2, 
-                    math.sin(self.rotation/360*2*math.pi)*2 
+            self.new_object_func(
+                    Cloud(
+                        self.object_id + '_cloud_' + str(self.orb_counter), 
+                        self.world_x+math.cos(self.rotation/360*2*math.pi)*25, 
+                        self.world_y+math.sin(self.rotation/360*2*math.pi)*25, 
+                        math.cos(self.rotation/360*2*math.pi)*2, 
+                        math.sin(self.rotation/360*2*math.pi)*2 
                     )
-                    )
+                )
         
         self.orb_counter = self.orb_counter+1
         
@@ -265,7 +501,10 @@ class Player(Map_object):
 
         if (self.fire_timer<20):
             self.fire_timer = self.fire_timer + dt
-    
+        
+        if (self.no_input_count*dt > 60):
+            self.state = 'deleted'
+        
 class World_map:
 
     def __init__(self, sz_x, sz_y):
@@ -277,21 +516,84 @@ class World_map:
         
         self.object_list = []
         
-        for i in range(0,3000):
+        for i in range(0,100):
             self.object_list.append(
                     Sphere_blue(
                             'sphere' + str(i), 
                             random.randint(1,sz_x), 
-                            random.randint(1,sz_y)
+                            random.randint(1,sz_y),
+                            self.add_object
                             )
                     )
 
+        for i in range(0,50):
+            self.object_list.append(
+                    Enemy_tower_1(
+                            'enemy_tower1' + str(i), 
+                            random.randint(1,sz_x), 
+                            random.randint(1,sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )
+        
+        for i in range(0,50):
+            self.object_list.append(
+                    Enemy_tower_2(
+                            'enemy_tower2' + str(i), 
+                            random.randint(1,sz_x), 
+                            random.randint(1,sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )
+                    
+        for i in range(0,50):
+            self.object_list.append(
+                    Enemy_tower_3(
+                            'enemy_tower3' + str(i), 
+                            random.randint(1,sz_x), 
+                            random.randint(1,sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        for i in range(0,50):
+            self.object_list.append(
+                    Airship_1(
+                            'airship1' + str(i), 
+                            random.randint(1,sz_x), 
+                            random.randint(1,sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        for i in range(0,50):
+            self.object_list.append(
+                    Airship_2(
+                            'airship2' + str(i), 
+                            random.randint(1,sz_x), 
+                            random.randint(1,sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        for i in range(0,50):
+            self.object_list.append(
+                    Airship_3(
+                            'airship3' + str(i), 
+                            random.randint(1,sz_x), 
+                            random.randint(1,sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
         for x_id in range(0,100):
             for y_id in range(0,100):
                 self.object_list.append(
                         Map_tile('maptile_'+str(x_id)+'_'+str(y_id), x_id*50, y_id*50, x_id, y_id, 'Map1' )
                         )
-
+                
     def iterate():
         pass
 
@@ -307,7 +609,7 @@ class World_map:
         
         self.object_list.append(my_object)
         
-        print('adding ' + my_object.object_id)
+        #print('adding ' + my_object.object_id)
         
         return 0
         
@@ -324,7 +626,7 @@ class World_map:
             new_player_id = str(json.loads( new_player_id_raw) )
             if (not(new_player_id in [el.object_id for el in self.object_list if (el.object_type=='player')])):
                 self.add_object( Player(new_player_id, 2500, 2500, 0, 0, self.add_object ) )
-        
+                
         #send players their data
         
         player_obj_list = [el for el in self.object_list if (el.object_type=='player')]
@@ -352,9 +654,9 @@ class World_map:
             
             all_visible_object_ids+=object_ids
             
-            logging_info = log_queue.get(player_obj.object_id)
-            if not(logging_info is None):
-                print(player_obj.object_id + ': ' + str(logging_info))
+            #logging_info = log_queue.get(player_obj.object_id)
+            #if not(logging_info is None):
+            #    print(player_obj.object_id + ': ' + str(logging_info))
                 
             obj_data_queue.set(player_obj.object_id ,json.dumps(objects), px = 200 )
         
@@ -364,20 +666,20 @@ class World_map:
         
         #update objects
         
-        #visible_ids_deduped = list(dict.fromkeys(all_visible_object_ids))
+        visible_ids_deduped = list(dict.fromkeys(all_visible_object_ids))
         
-        #for obj_id in visible_ids_deduped:
-        for obj_id in range(0,len(self.object_list) ):
+        for obj_id in visible_ids_deduped:
+        #for obj_id in range(0,len(self.object_list) ):
             self.object_list[obj_id].update_pos(self.dt)
             self.object_list[obj_id].update_state(self.dt)
         
     def get_objects(self, x_center, y_center, box_h, box_w):    
         
         np_obj_out = np.array( [[el_id, el] for el_id, el in enumerate(self.object_list) if (
-                (el.world_x > x_center - box_h / 2)&
-                (el.world_x < x_center + box_h / 2)&
-                (el.world_y > y_center - box_w / 2)&
-                (el.world_y < y_center + box_w / 2)
+                (el.world_x + el.sz_x/2 > x_center - box_h / 2)&
+                (el.world_x - el.sz_x/2 < x_center + box_h / 2)&
+                (el.world_y + el.sz_y/2 > y_center - box_w / 2)&
+                (el.world_y - el.sz_y/2 < y_center + box_w / 2)
             )] )
         
         return(list(np_obj_out[:,0]),list(np_obj_out[:,1]))
@@ -403,7 +705,7 @@ class World_map:
 class my_environment:
 
     def __init__(self, update_function, init_function):
-
+        
         print('environment init')
         
         self.objects = []

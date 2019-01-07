@@ -6,10 +6,13 @@ Created on Sun Dec 30 19:49:18 2018
 @author: ivanskya
 """
 
-from flask import Flask, request, render_template, session
+from flask import Flask, request, render_template, flash, redirect, session, url_for
+
 from flask import send_file
 
-import json
+import json, os
+
+from captcha.image import ImageCaptcha
 
 import redis
 obj_data_queue = redis.Redis(host='localhost', port=6379, db=0)
@@ -29,15 +32,7 @@ def get_instr_update(objects_old, player_id):
     else:
         objects_new = []
     
-    instruction_list = []
-    
-    #update
-    
-    for object_new_curr in objects_new:
-
-        instruction = {"instruction": "mod_obj","params":object_new_curr}
-        
-        instruction_list.append(instruction)
+    instruction_list = objects_new
     
     return(instruction_list, objects_new)
 
@@ -52,7 +47,7 @@ def get_instr_redraw(player_id):
     instruction_list = []
     
     for object_new_curr in objects_new:
-        instruction = {"instruction": "new_obj", "params":object_new_curr}
+        instruction = {object_new_curr}
         
         instruction_list.append(instruction)
         
@@ -75,16 +70,30 @@ def update():
 @app.route('/login', methods=['GET', 'POST'])
 def do_login():
     
-    session['stage'] = 2
-    session['user_id'] = request.form['user_id']
-    session['objects'] = []
+    if ('1234'==request.form['capcha']):
     
-    user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
+        session['stage'] = 2
+        session['user_id'] = request.form['user_id']
+        
+        session['objects'] = []
+        
+        user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
     
-    return index()
+        return index()
+    else:
+        return render_template('frame_set.html')
+    
+@app.route('/get_capcha_img1', methods=['GET', 'POST'])
+def get_capcha_img():
+    
+    image = ImageCaptcha()
+    session['capcha_solution'] = 1234
+    data = image.generate(str(session['capcha_solution']))
+    
+    return send_file(data, mimetype='image/png')
 
-@app.route("/", methods=['GET', 'POST'])
-def index():
+@app.route("/game_renderer", methods=['GET', 'POST'])
+def game_renderer():
     if not session.get('stage'):
         return render_template('login.html')
     else:
@@ -92,13 +101,24 @@ def index():
             return render_template('login.html')
         else:
             session['stage']=1
-            return render_template("index.html")
+            return render_template("game_renderer.html")
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    return render_template('frame_set.html')
 
 @app.route("/get_image/<img_file>", methods=['GET', 'POST'])
 def get_img(img_file):
     
     return send_file("img/rotations/"+img_file, mimetype='image/png')
 
+@app.route("/get_preload_image_list", methods=['GET', 'POST'])
+def get_preload_image_list():
+    
+    file_list = ['get_image/' + x for x in os.listdir('img/rotations/')]
+    
+    return( json.dumps( file_list) )
+    
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
     #app.run()

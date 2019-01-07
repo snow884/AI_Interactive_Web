@@ -25,7 +25,7 @@ root_list_y = [-1,-1,1,1]
 my_path_x = []
 my_path_y = []
 
-x_curr = -1.6
+x_curr = -1.2
 y_curr = -2
 
 def my_func(x_curr,y_curr,root_list_x,root_list_y):
