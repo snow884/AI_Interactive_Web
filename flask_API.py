@@ -77,6 +77,10 @@ def update():
         
     return("ERROR")
 
+@app.route('/init_score_screen', methods=['GET', 'POST'])
+def init_score_screen():
+    
+    return render_template("game_renderer.html")
 
 @app.route('/login', methods=['GET', 'POST'])
 def do_login():
