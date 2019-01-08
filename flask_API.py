@@ -52,7 +52,7 @@ def update():
         control_data = request.get_json()
         con_data_queue.set(str(session['user_id']), json.dumps( control_data ), px = 200 )
         
-        instruction_list, session['objects'] = get_instr_update( session['objects'],session['user_id'] )
+        instruction_list = get_instr_update( session['user_id'] )
         
         return( json.dumps( instruction_list) )
         
