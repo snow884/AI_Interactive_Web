@@ -1,21 +1,42 @@
 <html><head>
 <style>
+
+body {
+    background-color : #484848;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    color : #000000;
+    text-align : center;
+    font-family: "SIMPSON";
+}
 form {
-    left: 25%;
-    top: 45%;
-    position: absolute;
-    text-align: center;
+    width: 300px;
+    margin: 0 auto;
 }
 </style>
 </head>
 <body>
-<form action="/login" method="POST">
-<input type="user_id" name="user_id" placeholder="Your Nickname"><br>
-<img src="/get_capcha_img1" alt="Flowers in Chania"><br> 
-<input type="capcha" name="capcha" placeholder="Text from the image"><br>   
-<input type="submit" value="Log in">
-</form>
 
+</div>
+    <h1>Join the game ! </h1>
+      <form action="/login" method="POST" align="center">
+       <table>
+        <tr>
+         <td>Your nickname :</td> <td><input type="user_id" name="user_id" placeholder="Your Nickname"></td><br>
+        </tr>
+        <tr>
+         <td></td> <td><img src="/get_capcha_img1" alt="Flowers in Chania"></td><br>
+        </tr>
+        <tr>
+         <td>Capcha (all lower case) :</td> <td><input type="capcha" name="capcha" placeholder="Text from the image"></td><br>
+        </tr>
+        <tr>
+         <td></td> <td><input type="submit" value="Submit"></td>
+        </tr>
+       </table>
+      </form>
 <script>
 </script>
 </body>
