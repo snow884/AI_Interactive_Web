@@ -35,34 +35,15 @@ def generate_capcha():
     str1 = ''.join(str(e) for e in random_list)
     return(str1)
 
-def get_instr_update(objects_old, player_id):
+def get_instr_update(player_id):
     
-    objects_new_raw = obj_data_queue.get(player_id)
-    if not(objects_new_raw is None):
-            objects_new = json.loads( objects_new_raw )
+    data_new_raw = obj_data_queue.get(player_id)
+    if not(data_new_raw is None):
+            data_new = json.loads( data_new_raw )
     else:
-        objects_new = []
+        data_new = []
     
-    instruction_list = objects_new
-     
-    return(instruction_list, objects_new)
-
-def get_instr_redraw(player_id):
-    
-    objects_new_raw = obj_data_queue.get(player_id)
-    if not(objects_new_raw is None):
-            objects_new = json.loads( objects_new_raw )
-    else:
-        objects_new = []
-        
-    instruction_list = []
-    
-    for object_new_curr in objects_new:
-        instruction = {object_new_curr}
-        
-        instruction_list.append(instruction)
-        
-    return(instruction_list, objects_new)
+    return(data_new)
 
 @app.route("/update", methods=['GET', 'POST'])
 def update():

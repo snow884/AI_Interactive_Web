@@ -19,11 +19,15 @@
 
 #myScoreboard {
   width: 40px;
-  height: 40px;
+  height: 80px;
+  top = 0px; 
+  left = 360px'; 
   position: relative;
-  background: yellow;
+  background: black;
   z-index:2000;
   touch-action: none;
+  opacity: 0.5;
+  font-size: 6px;
 }
 
 </style>
@@ -278,11 +282,11 @@ function do_ajax() {
             
             //result.innerHTML = this.responseText
             
-            instruction_data = JSON.parse(this.responseText)
+            update_data = JSON.parse(this.responseText)
             
             //result.innerHTML = this.responseText;
             
-            do_update(instruction_data)
+            do_update(update_data)
             
         } else {
             result.innerHTML = "error...";
@@ -296,6 +300,10 @@ function do_ajax() {
 }
       
 function do_update(instruction_data) {
+    
+    document.getElementById("myScoreboard").textContent = instruction_data.status_text;
+    
+    instruction_data = update_data.instruction_data;
     
     synch_el_exists = new Array(synch_el_list.length).fill(0)
     

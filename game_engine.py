@@ -657,9 +657,12 @@ class World_map:
             #logging_info = log_queue.get(player_obj.object_id)
             #if not(logging_info is None):
             #    print(player_obj.object_id + ': ' + str(logging_info))
-                
+            data=[]
+            data.instruction_data = objects
+            data.status_text = 'XXXXXXXX'
+            
             obj_data_queue.set(player_obj.object_id ,json.dumps(objects), px = 200 )
-        
+            
         #handle colidions
         
         self.handle_coliditions( list(dict.fromkeys(all_visible_object_ids)) )
