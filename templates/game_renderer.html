@@ -17,6 +17,15 @@
   touch-action: none;
 }
 
+#myScoreboard {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  background: yellow;
+  z-index:2000;
+  touch-action: none;
+}
+
 </style>
 <style type="text/css">#tryitLeaderboard ~ #container { top: 48px!important; }
 #tryitLeaderboard ~ .trytopnav { top: 0!important; }</style></head><body>
@@ -25,9 +34,12 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <div id="lock_screen">
 <div id="myContainer">
+<div id="myScoreboard">
+</div>
 </div>
 </div>
 </meta>
+
 
 <div id="result"></div>
     
