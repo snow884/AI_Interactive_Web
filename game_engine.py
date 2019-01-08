@@ -657,7 +657,7 @@ class World_map:
             #logging_info = log_queue.get(player_obj.object_id)
             #if not(logging_info is None):
             #    print(player_obj.object_id + ': ' + str(logging_info))
-            data=[]
+            data={}
             data.instruction_data = objects
             data.status_text = 'XXXXXXXX'
             
