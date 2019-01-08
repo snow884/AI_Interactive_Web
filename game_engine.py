@@ -187,7 +187,7 @@ class Orb(Map_object):
             self.state = 'deleted'
             
     def collide(self, other_obj):
-        if (not(other_obj.object_type in ['player','map_tile', 'cloud'])):
+        if (not(other_obj.object_type in ['map_tile', 'cloud', 'orb'])):
             self.state = 'deleted'
             self.new_object_func(Cloud(
                     self.object_id + '_cloud', 
@@ -197,6 +197,7 @@ class Orb(Map_object):
                     0
                     )
                     )
+            
 
 class Cloud(Map_object):
     
@@ -402,11 +403,11 @@ class Airship_1(Map_object):
             
     def get_image(self):
         return('url("get_image/airship1_orig_'+str(int(self.rotation/10)*10)+'.png")') 
-
+    
     def collide(self, other_obj):
         if (other_obj.object_type in ['orb','player']):
             self.state = 'deleted'
-
+            
 class Airship_2(Airship_1):
     def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
         Airship_1.__init__(self, object_id, world_x, world_y, new_object_func, get_objects_func )
@@ -433,6 +434,7 @@ class Player(Map_object):
         self.orb_counter = 0
         self.orb_timer = 0
         self.fire_timer = 0
+        self.health = 8
         
     def get_image(self):
         return('url("get_image/plane_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -469,8 +471,8 @@ class Player(Map_object):
             self.new_object_func(
                     Orb(
                             self.object_id + '_fire_' + str(self.orb_counter), 
-                            self.world_x - math.cos(self.rotation/360*2*math.pi)*20, 
-                            self.world_y - math.sin(self.rotation/360*2*math.pi)*20,
+                            self.world_x - math.cos(self.rotation/360*2*math.pi)*50, 
+                            self.world_y - math.sin(self.rotation/360*2*math.pi)*50,
                             - math.cos(self.rotation/360*2*math.pi)*10, 
                             - math.sin(self.rotation/360*2*math.pi)*10,
                             self.new_object_func
@@ -487,8 +489,8 @@ class Player(Map_object):
             self.new_object_func(
                     Cloud(
                         self.object_id + '_cloud_' + str(self.orb_counter), 
-                        self.world_x+math.cos(self.rotation/360*2*math.pi)*25, 
-                        self.world_y+math.sin(self.rotation/360*2*math.pi)*25, 
+                        self.world_x+math.cos(self.rotation/360*2*math.pi)*50, 
+                        self.world_y+math.sin(self.rotation/360*2*math.pi)*50, 
                         math.cos(self.rotation/360*2*math.pi)*2, 
                         math.sin(self.rotation/360*2*math.pi)*2 
                     )
@@ -498,12 +500,51 @@ class Player(Map_object):
         
         if self.orb_counter > 100:
             self.orb_counter = 0
-
+            
         if (self.fire_timer<20):
             self.fire_timer = self.fire_timer + dt
         
-        if (self.no_input_count*dt > 60):
-            self.state = 'deleted'
+        if (self.no_input_count*dt > 10):
+            self.death('💤 U were logged off due to inactivity!')
+        
+    def death(self, message):
+        
+        self.state = 'deleted'
+        
+        data={}
+        data["instruction_data"] = [1]
+        data["status_text"] = '_'
+        data["infobanner_text"] = '\r\n \r\n \r\n' + message
+        
+        obj_data_queue.set(self.object_id ,json.dumps(data), px = 200 )
+        
+    def sustain_damage(self, damage):
+        self.health = self.health - damage
+        
+        if (self.health<=0):
+            self.death('😵🔫 You were killed')
+
+    def heal(self, heanth_added):
+        self.health = self.health + heanth_added
+        if (self.health>8):
+            self.health = 8
+    
+    def collide(self, other_obj):
+        if (other_obj.object_type in ['orb','player','airship1','airship2','airship3']):
+            self.sustain_damage(1)
+            
+        if (other_obj.object_type in ['health_box']):
+            self.heal(1)
+            
+    def get_status_text(self):
+       
+        str_out='\r\n'
+        health_bar_string = ''.join(['▓'*(i<self.health)+' '*(i>=self.health) for i in range(0,8)])
+        str_out += 'HEALTH ' + health_bar_string + ' \r\n'
+        level_bar_string = ''.join(['▓'*(i<(self.fire_timer/20)*8)+' '*(i>=(self.fire_timer/20)*8) for i in range(0,8)])
+        str_out += 'CHARGE ' + level_bar_string + ' \r\n'    
+        
+        return(str_out)
         
 class World_map:
 
@@ -616,7 +657,6 @@ class World_map:
     def update(self):
         
         #delete expired objects
-        
         self.object_list = [my_obj for my_obj in self.object_list if not(my_obj.get_state()=='deleted')]  
         
         #create new users
@@ -658,10 +698,11 @@ class World_map:
             #if not(logging_info is None):
             #    print(player_obj.object_id + ': ' + str(logging_info))
             data={}
-            data.instruction_data = objects
-            data.status_text = 'XXXXXXXX'
+            data["instruction_data"] = objects
+            data["status_text"] = player_obj.get_status_text()
+            data["infobanner_text"] = 'None'
             
-            obj_data_queue.set(player_obj.object_id ,json.dumps(objects), px = 200 )
+            obj_data_queue.set(player_obj.object_id ,json.dumps(data), px = 200 )
             
         #handle colidions
         

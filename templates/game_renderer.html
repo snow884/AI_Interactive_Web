@@ -18,16 +18,39 @@
 }
 
 #myScoreboard {
-  width: 40px;
+  width: 80px;
   height: 80px;
-  top = 0px; 
-  left = 360px'; 
+  top: 0px;
+  left: 320px;
   position: relative;
   background: black;
-  z-index:2000;
+  color: green;
+  z-index:1000;
+  opacity:0.7;
+  font-size: 8px;
+  white-space: pre-line;
+  font-family: monospace, monospace;
+  line-height: 8px;
+  line-width: 8px;
+  border-radius: 5px; 
+}
+
+#myInfobanner {
+  top: 0px;
+  left: 0px;
+  width: 400px;
+  height: 400px;
+  position: absolute;
+  background: black;
+  color: green;
+  z-index:1;
   touch-action: none;
-  opacity: 0.5;
-  font-size: 6px;
+  font-size: 50px;
+  line-height: 50px;
+  line-width: 50px;
+  white-space: pre-line;
+  text-align: center; 
+  vertical-align: middle;
 }
 
 </style>
@@ -38,8 +61,13 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <div id="lock_screen">
 <div id="myContainer">
+
 <div id="myScoreboard">
 </div>
+
+<div id="myInfobanner">
+</div>
+
 </div>
 </div>
 </meta>
@@ -86,20 +114,18 @@ function preload() {
 
 function preload_images(imageArray)
 {
-    if (document.images) {
-        for(i=0; i<=imageArray.length-1; i++) {
-            var element = document.createElement("DIV"); 
-            (document.getElementsByTagName("BODY")[0]).appendChild(element);
-            element.setAttribute("id", "preloaded_image" + i);
-            element.style.width = 1 + 'px'; 
-            element.style.height = 1 + 'px'; 
-            element.style.position = "absolute"; 
-            element.style.top = -1 + 'px'; 
-            element.style.left = -1 + 'px'; 
-            element.style.backgroundColor = 'red';
-            element.style.backgroundImage = 'url("get_image/"+imageArray+")'; 
+    document.getElementById("myInfobanner").textContent = "\r\n \r\n \r\n Loading images";
+    document.getElementById("myInfobanner").zIndex = 2000
+    if (document.images) 
+    {
+        for(i=0; i<=imageArray.length-1; i++) 
+        {
+            images[i] = new Image();
+            images[i].src = "url("+imageArray[i]+")"; 
+            
         }
     }
+    document.getElementById("myInfobanner").zIndex = 1
 }
 
 
@@ -251,9 +277,9 @@ function do_redraw() {
     {
         if(this.readyState == 4 && this.status == 200) {
         
-            instruction_data = JSON.parse(JSON.parse(this.responseText))
+            data_in = JSON.parse(JSON.parse(this.responseText))
             result.innerHTML = this.responseText;
-            do_update(instruction_data)
+            do_update(data_in)
             
         } else {
             result.innerHTML = "error...";
@@ -299,11 +325,23 @@ function do_ajax() {
     drawing_finished = 1
 }
       
-function do_update(instruction_data) {
+function do_update(data_in) {
     
-    document.getElementById("myScoreboard").textContent = instruction_data.status_text;
+    document.getElementById("myScoreboard").textContent = data_in.status_text;
     
-    instruction_data = update_data.instruction_data;
+    if (data_in.infobanner_text==="None")
+    {
+    }
+    else
+    {
+        //document.write(data_in.infobanner_text)
+        document.getElementById("myInfobanner").textContent = data_in.infobanner_text;
+        document.getElementById("myInfobanner").zIndex = 2000;
+        clearTimeout(global_timer);
+        //abort();
+    }
+    
+    instruction_data = data_in.instruction_data;
     
     synch_el_exists = new Array(synch_el_list.length).fill(0)
     
@@ -383,20 +421,26 @@ function smooth_motion(element, new_x, new_y)
     }
 }
 
+function abort()
+{
+   throw new Error('Execution aborted');
+}
+
 function myAnimation() 
 {
-  var id = setInterval(refresh, major_refresh);
+  var my_timer = setInterval(refresh, major_refresh);
   function refresh() {
       if (drawing_finished === 1)
       {
           do_ajax()
       }
   }
+  return(my_timer)
 }
 
 preload()
 do_redraw()
-myAnimation()
+global_timer = myAnimation()
 
 </script>
 

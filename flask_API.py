@@ -66,26 +66,26 @@ def init_score_screen():
 @app.route('/login', methods=['GET', 'POST'])
 def do_login():
     
-    if (session['capcha_solution']==request.form['capcha']):
+#    if (session['capcha_solution']==request.form['capcha']):
+#  
+#        if (len(request.form['user_id'])<8):
+#            return login_screen('short_user_id')
+#        else:
+    player_id = request.form['user_id']
+    
+    objects_new_raw = obj_data_queue.get(player_id)
+    if (objects_new_raw is None):
         
-        if (len(request.form['user_id'])<8):
-            return login_screen('short_user_id')
-        else:
-            player_id = request.form['user_id']
-            
-            objects_new_raw = obj_data_queue.get(player_id)
-            if (objects_new_raw is None):
-            
-                session['user_id'] = player_id    
-                session['objects'] = []
-                
-                user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
-                
-                return game_renderer()
-            else:
-                return login_screen('player_exists')
-    else:
-        return login_screen('incorrect_capcha')
+        session['user_id'] = player_id    
+        session['objects'] = []
+        
+        user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
+        
+        return game_renderer()
+#            else:
+#                return login_screen('player_exists')
+#    else:
+#        return login_screen('incorrect_capcha')
     
 @app.route('/get_capcha_img1', methods=['GET', 'POST'])
 def get_capcha_img():
