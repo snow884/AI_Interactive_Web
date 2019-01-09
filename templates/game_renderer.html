@@ -338,6 +338,12 @@ function do_update(data_in) {
         document.getElementById("myInfobanner").textContent = data_in.infobanner_text;
         document.getElementById("myInfobanner").zIndex = 2000;
         clearTimeout(global_timer);
+        
+        setTimeout(function() {
+            window.location.replace("/login_screen/game_exit");
+        }, 3000);
+        
+        
         //abort();
     }
     

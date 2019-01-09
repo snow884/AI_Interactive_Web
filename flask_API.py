@@ -107,7 +107,7 @@ def login_screen(warning_type):
     else:
         return render_template('login.html')
     
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/frame_set", methods=['GET', 'POST'])
 def index():
     return render_template('frame_set.html')
 

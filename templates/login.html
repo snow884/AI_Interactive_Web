@@ -2,14 +2,16 @@
 <style>
 
 body {
-    background-color : #484848;
+    background-color : black;
+    color: green;
     margin: 0;
     padding: 0;
 }
 h1 {
-    color : #000000;
+    color: green;
     text-align : center;
-    font-family: "SIMPSON";
+    font-family: monospace, monospace;
+
 }
 form {
     width: 300px;
@@ -20,14 +22,14 @@ form {
 <body>
 
 </div>
-    <h1>Join the game ! </h1>
+    <br><h1>Join the game ! </h1>
       <form action="/login" method="POST" align="center">
        <table>
         <tr>
          <td>Your nickname :</td> <td><input type="user_id" name="user_id" placeholder="Your Nickname"></td><br>
         </tr>
         <tr>
-         <td></td> <td><img src="/get_capcha_img1" alt="Flowers in Chania"></td><br>
+         <td></td> <td><img src="/get_capcha_img1" alt="capcha image"></td><br>
         </tr>
         <tr>
          <td>Capcha (all lower case) :</td> <td><input type="capcha" name="capcha" placeholder="Text from the image"></td><br>
