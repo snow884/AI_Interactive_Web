@@ -1,328 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
 
-<html><head><style>
+    <!-- For development, pass document through inliner -->
+    <link rel="stylesheet" href="css/simple.css">
 
-#lock_screen {
-    height: 100%;
-    overflow: hidden;
-    width: 100%;
-    position: fixed;
-}
+    <style type="text/css">
 
-#myContainer {
-  width: 400px;
-  height: 400px;
-  position: relative;
-  background: yellow;
-  z-index:2;
-  touch-action: none;
-}
+* { margin: 0; padding: 0; font-size: 100%; font-family: 'Avenir Next', "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif; line-height: 1.65; }
 
-</style>
-<style type="text/css">#tryitLeaderboard ~ #container { top: 48px!important; }
-#tryitLeaderboard ~ .trytopnav { top: 0!important; }</style></head><body>
+img { max-width: 100%; margin: 0 auto; display: block; }
 
+body, .body-wrap { width: 100% !important; height: 100%; background: #f8f8f8; }
 
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<div id="lock_screen">
-<div id="myContainer">
-<div id="myScoreboard">
-</div>
-</div>
-</div>
-</meta>
+a { color: #71bc37; text-decoration: none; }
 
-<div id="result"></div>
-    
-<script>
+a:hover { text-decoration: underline; }
 
-var major_refresh = 50
-var minor_refresh = 5
+.text-center { text-align: center; }
 
-var keys = [];
-var mouse_x = 0;
-var mouse_y = 0;
-var mouseDown = 0;
-var drawing_finished = 1
-var synch_el_list = [];
+.text-right { text-align: right; }
 
+.text-left { text-align: left; }
 
-function preload() {
+.button { display: inline-block; color: white; background: #71bc37; border: solid #71bc37; border-width: 10px 20px 8px; font-weight: bold; border-radius: 4px; }
 
-    var req = new XMLHttpRequest();
-    
-    req.onreadystatechange = function()
-    {
-        if(this.readyState == 4 && this.status == 200) {
+.button:hover { text-decoration: none; }
 
-            imageArray = JSON.parse(this.responseText)
-            preload_images(imageArray)
+h1, h2, h3, h4, h5, h6 { margin-bottom: 20px; line-height: 1.25; }
 
-            
-        } else {
-            result.innerHTML = "error...";
-        }
-    }
-    
-    req.open('POST', '/get_preload_image_list', true);
-    req.setRequestHeader("Content-Type", "application/json");
-    req.send([]);
-}
+h1 { font-size: 32px; }
 
-function preload_images(imageArray)
-{
-    if (document.images) {
-        for(i=0; i<=imageArray.length-1; i++) {
-            var element = document.createElement("DIV"); 
-            document.getElementById("Body").appendChild(element);
-            element.setAttribute("id", "preloaded_image" + i);
-            element.style.width = 1 + 'px'; 
-            element.style.height = 1 + 'px'; 
-            element.style.position = "absolute"; 
-            element.style.top = -1 + 'px'; 
-            element.style.left = -1 + 'px'; 
-            element.style.backgroundColor = 'red';
-            element.style.backgroundImage = 'url("get_image/"+imageArray+")'; 
-            element.style.zIndex=instruction_data[instr_i].zIndex; 
-        }
-    }
-}
+h2 { font-size: 28px; }
 
+h3 { font-size: 24px; }
 
-window.addEventListener("keydown",
-    function(e){
-        keys[e.keyCode] = e.keyCode;
-        var keysArray = getNumberArray(keys);
-    }, false);
+h4 { font-size: 20px; }
 
-window.addEventListener('keyup',
-    function(e){
-        keys[e.keyCode] = false;
-    },false);
+h5 { font-size: 16px; }
 
-window.addEventListener("touchmove", function(e){
+p, ul, ol { font-size: 16px; font-weight: normal; margin-bottom: 20px; }
 
-    var m_posx = 0, m_posy = 0, e_posx = 0, e_posy = 0,
-           obj = document.getElementById("myContainer");
-    //get mouse position on document crossbrowser
-    if (!e){e = window.event;}
-    if (e.changedTouches[0].pageX || e.changedTouches[0].pageY){
-        m_posx = e.changedTouches[0].pageX;
-        m_posy = e.changedTouches[0].pageY;
-    } else if (e.changedTouches[0].clientX || e.changedTouches[0].clientY){
-        m_posx = e.changedTouches[0].clientX + document.body.scrollLeft
-                 + document.documentElement.scrollLeft;
-        m_posy = e.changedTouches[0].clientY + document.body.scrollTop
-                 + document.documentElement.scrollTop;
-    }
-    //get parent element position in document
-    if (obj.offsetParent){
-        do { 
-            e_posx += obj.offsetLeft;
-            e_posy += obj.offsetTop;
-        } while (obj = obj.offsetParent);
-    }
-    // mouse position minus elm position is mouseposition relative to element:
-    mouse_x = (m_posx-e_posx); 
-    mouse_y = (m_posy-e_posy);
-}, false);
+.container { display: block !important; clear: both !important; margin: 0 auto !important; max-width: 580px !important; }
 
-function getNumberArray(arr){
-    var newArr = new Array();
-    for(var i = 0; i < arr.length; i++){
-        if(typeof arr[i] == "number"){
-            newArr[newArr.length] = arr[i];
-        }
-    }
-    return newArr;
-}
+.container table { width: 100% !important; border-collapse: collapse; }
 
-document.body.onmousedown = function() { 
-  ++mouseDown;
-}
+.container .masthead { padding: 80px 0; background: #71bc37; color: white; }
 
-document.body.onmouseup = function() { 
-  --mouseDown;
-}
+.container .masthead h1 { margin: 0 auto !important; max-width: 90%; text-transform: uppercase; }
 
-window.addEventListener('mousemove', 
-function(e){
-    var m_posx = 0, m_posy = 0, e_posx = 0, e_posy = 0,
-           obj = document.getElementById("myContainer");
-    //get mouse position on document crossbrowser
-    if (!e){e = window.event;}
-    if (e.pageX || e.pageY){
-        m_posx = e.pageX;
-        m_posy = e.pageY;
-    } else if (e.clientX || e.clientY){
-        m_posx = e.clientX + document.body.scrollLeft
-                 + document.documentElement.scrollLeft;
-        m_posy = e.clientY + document.body.scrollTop
-                 + document.documentElement.scrollTop;
-    }
-    //get parent element position in document
-    if (obj.offsetParent){
-        do { 
-            e_posx += obj.offsetLeft;
-            e_posy += obj.offsetTop;
-        } while (obj = obj.offsetParent);
-    }
-    // mouse position minus elm position is mouseposition relative to element:
-    mouse_x = (m_posx-e_posx); 
-    mouse_y = (m_posy-e_posy);
-}
-, false);
+.container .content { background: white; padding: 30px 35px; }
 
-function do_redraw() {
-    var req = new XMLHttpRequest();
-    
-    var data = {};
-    
-    req.onreadystatechange = function()
-    {
-        if(this.readyState == 4 && this.status == 200) {
-        
-            instruction_data = JSON.parse(JSON.parse(this.responseText))
-            result.innerHTML = this.responseText;
-            do_update(instruction_data)
-            
-        } else {
-            result.innerHTML = "error...";
-        }
-    }
+.container .content.footer { background: none; }
 
-    req.open('POST', '/redraw', true);
-    req.setRequestHeader("Content-Type", "application/json");
-    req.send(JSON.stringify(data));
-}
-      
-function do_ajax() {
-    drawing_finished = 0
-    var req = new XMLHttpRequest();
-    
-    var data = {};
-    data["keys_pressed"]=(getNumberArray(keys));
-    data["mouse_x"]=mouse_x;
-    data["mouse_y"]=mouse_y;
-    data["mouseDown"]=mouseDown
-    
-    req.onreadystatechange = function()
-    {
-        if(this.readyState == 4 && this.status == 200) {
-            
-            //result.innerHTML = this.responseText
-            
-            instruction_data = JSON.parse(this.responseText)
-            
-            //result.innerHTML = this.responseText;
-            
-            do_update(instruction_data)
-            
-        } else {
-            result.innerHTML = "error...";
-        }
-    }
-    
-    req.open('POST', '/update', true);
-    req.setRequestHeader("Content-Type", "application/json");
-    req.send(JSON.stringify(data));
-    drawing_finished = 1
-}
-      
-function do_update(instruction_data) {
-    
-    synch_el_exists = new Array(synch_el_list.length).fill(0)
-    
-    for(var instr_i = 0; instr_i < instruction_data.length; instr_i++){
-        
-        var found_index = synch_el_list.findIndex(function(element) {
-           return instruction_data[instr_i].id === element;
-        });
-        
-        if (found_index==-1)
-        {
-            
-            var element = document.createElement("DIV"); 
-            document.getElementById("myContainer").appendChild(element);
-            element.setAttribute("id", instruction_data[instr_i].id);
-            element.style.width = instruction_data[instr_i].width + 'px'; 
-            element.style.height = instruction_data[instr_i].height + 'px'; 
-            element.style.position = "absolute"; 
-            element.style.top = instruction_data[instr_i].top + 'px'; 
-            element.style.left = instruction_data[instr_i].left + 'px'; 
-            element.style.backgroundColor = instruction_data[instr_i].backgroundColor;
-            element.style.backgroundImage = instruction_data[instr_i].backgroundImage; 
-            element.style.zIndex=instruction_data[instr_i].zIndex; 
-            
-            synch_el_list.push(instruction_data[instr_i].id)
-            synch_el_exists.push(1)
-        } else
-        {
-            synch_el_exists[found_index] = 1
-        
-            var element = document.getElementById( instruction_data[instr_i].id );
-            //element.style.width = instruction_data[instr_i].width + 'px'; 
-            //element.style.height = instruction_data[instr_i].height + 'px'; 
-            smooth_motion(element, instruction_data[instr_i].width, instruction_data[instr_i].height);
-            element.style.position = "absolute"; 
-            element.style.top = instruction_data[instr_i].top + 'px'; 
-            element.style.left = instruction_data[instr_i].left + 'px'; 
-            element.style.backgroundColor = instruction_data[instr_i].backgroundColor;
-            element.style.backgroundImage = instruction_data[instr_i].backgroundImage; 
-            element.style.zIndex=instruction_data[instr_i].zIndex; 
-        }
-    }
-    
-    //document.write(synch_el_list);
-    //document.write(synch_el_exists);
-    
-    for (var i = synch_el_exists.length - 1; i >= 0; i--)
-    {
-        if (synch_el_exists[i]==0) 
-        {
-            var element = document.getElementById( synch_el_list[i] );
-            element.parentNode.removeChild(element);
-            synch_el_list.splice(i,1);
-        }
-    }
-    
-    return "OK"
-}
+.container .content.footer p { margin-bottom: 0; color: #888; text-align: center; font-size: 14px; }
 
-function smooth_motion(element, new_x, new_y) 
-{
-    var old_x = element.style.top 
-    var old_y = element.style.left 
-    var time_index = 0
+.container .content.footer a { color: #888; text-decoration: none; font-weight: bold; }
 
-    var motion_timer = setInterval(refresh_motion, minor_refresh);
-    function refresh_motion() 
-    {
-        element.style.top = old_x + ( new_x - old_x ) / (major_refresh / minor_refresh ) * time_index + 'px';  
-        element.style.left = old_y + ( new_y - old_y ) / (major_refresh / minor_refresh ) * time_index + 'px';         time_index = time_index + 1;
-        
-        if ( time_index > (major_refresh / minor_refresh ) )
-        {
-            clearInterval(motion_timer);
-        }
-        time_index = time_index + 1;
-    }
-}
+.container .content.footer a:hover { text-decoration: underline; }
 
-function myAnimation() 
-{
-  var id = setInterval(refresh, major_refresh);
-  function refresh() {
-      if (drawing_finished === 1)
-      {
-          do_ajax()
-      }
-  }
-}
+    </style>
+</head>
+<body>
+<table class="body-wrap">
+    <tr>
+        <td class="container">
 
-preload()
-do_redraw()
-myAnimation()
+            <!-- Message start -->
+            <table>
+                <tr>
+                    <td align="center" class="masthead">
 
-</script>
+                        <h1>Just a simple mutiplayer game...</h1>
 
-</body></html>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="content">
+
+                        <h2>Hi guys,</h2>
+
+                        <p>
+                        please enjoy the alpha sersion of my new online multiplayer game. 
+                        Simply type in your nick, type in the capcha and start playing.
+                        </p>
+                        <p>
+                        If you are on a desktop you may move around by using your 
+                        mouse and use right-click to fire.
+                        </p>                        
+                        <p>
+                        If you are on a smartphone you can move around by simply touching the map
+                        and fire by swipping your finger in the direction of the enemy.
+                        </p> 
+                        <table>
+                            <tr>
+                                <td align="center">
+                                    <iframe src="/frame_set" autofocus="true" scrolling=no width=400px height=400px marginheight=0px marginwidth=0px></iframe>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <table>
+                            <tr>
+                                <td align="center">
+                                    <p>
+                                        <a href="/frame_set" class="button">Switch to full screen</a>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p>By the way, if you're wondering where you can find more of this fine meaty filler, visit <a href="http://baconipsum.com">Bacon Ipsum</a>.</p>
+
+                        <p><em>– Mr. Pen</em></p>
+
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+    <tr>
+        <td class="container">
+
+            <!-- Message start -->
+            <table>
+                <tr>
+                    <td class="content footer" align="center">
+                        <p>Sent by <a href="#">Company Name</a>, 1234 Yellow Brick Road, OZ, 99999</p>
+                        <p><a href="mailto:">hello@company.com</a> | <a href="#">Unsubscribe</a></p>
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

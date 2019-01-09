@@ -108,8 +108,12 @@ def login_screen(warning_type):
         return render_template('login.html')
     
 @app.route("/frame_set", methods=['GET', 'POST'])
-def index():
+def frame_set():
     return render_template('frame_set.html')
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    return render_template('index.html')
 
 @app.route("/get_image/<img_file>", methods=['GET', 'POST'])
 def get_img(img_file):
