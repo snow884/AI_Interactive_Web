@@ -28,7 +28,7 @@ form {
          <td>Your nickname :</td> <td><input type="user_id" name="user_id" placeholder="Your Nickname"></td><br>
         </tr>
         <tr>
-         <td></td> <td><img src="/get_capcha_img1" alt="capcha image"></td><br>
+         <td></td> <td><img id="my_capcha_image" src="/get_capcha_img1?" alt="capcha image"></td><br>
         </tr>
         <tr>
          <td>Capcha (all lower case) :</td> <td><input type="capcha" name="capcha" placeholder="Text from the image"></td><br>
@@ -39,6 +39,8 @@ form {
        </table>
       </form>
 <script>
+var element = document.getElementById("my_capcha_image");
+element.src = element.src + "?" + Math.random();
 </script>
 </body>
 </html>

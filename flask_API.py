@@ -68,7 +68,7 @@ def do_login():
     
     if (session['capcha_solution']==request.form['capcha']):
   
-        if (len(request.form['user_id'])<8):
+        if ((len(request.form['user_id'])<8) & (len(request.form['user_id'])>20)) :
             return login_screen('short_user_id')
         else:
             player_id = request.form['user_id']
@@ -96,6 +96,11 @@ def get_capcha_img():
     
     return send_file(data, mimetype='image/png')
 
+@app.route('/get_website_img/<img_name>', methods=['GET', 'POST'])
+def get_website_img(img_name):
+    
+    return send_file('templates/static/images/' + img_name, mimetype='image/jpeg')
+
 @app.route("/game_renderer", methods=['GET', 'POST'])
 def game_renderer():
     return render_template("game_renderer.html")
@@ -105,11 +110,11 @@ def login_screen(warning_type):
     if (warning_type=='initial_ok'):
         return render_template('login.html')
     if (warning_type=='short_user_id'):
-        return render_template('login.html',context_info = "Your username must have at least 8 characters!")
+        return render_template('login.html',context_info = "Your username must have 8-20 characters!")
     if (warning_type=='incorrect_capcha'):
         return render_template('login.html',context_info = "The capcha you have typed in is incorrect! Are you a robot ?")
     if (warning_type=='game_exit'):
-    return render_template('login.html',context_info = "The game exited")
+        return render_template('login.html',context_info = "The game exited.")
 
 @app.route("/frame_set", methods=['GET', 'POST'])
 def frame_set():
