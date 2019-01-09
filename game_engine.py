@@ -21,12 +21,22 @@ con_data_queue = redis.Redis(host='localhost', port=6379, db=1)
 user_data_queue = redis.Redis(host='localhost', port=6379, db=2)
 log_queue = redis.Redis(host='localhost', port=6379, db=3)
 
+class Helper(object):
+    def get_rotated_img_string(img_name,rotation):
+        
+        rotation = rotation - int(rotation/360)*360
+        
+        str_out = 'url("get_image/' + img_name + '_'+str(int(rotation/10)*10)+'.png")'
+
+        return(str_out)
+    
 class Map_object:
     
-    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
+    def __init__(self, object_id, object_type, object_class, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
         
         self.object_id = object_id
         self.object_type = object_type
+        self.object_class = object_class
         self.world_x = world_x 
         self.world_y = world_y 
         self.world_vx = world_vx 
@@ -57,18 +67,137 @@ class Map_object:
             self.object_id + ' [' + self.object_type + ']'
         )
         return(my_str)
-        
+    
     __repr__ = __str__
 
-class Sphere_blue(Map_object):
+class Map_object_decor(Map_object):
+
+    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
+        Map_object(
+                self,
+                object_id = object_id, 
+                object_type = object_type, 
+                object_class = 'decorative', 
+                world_x = world_x, 
+                world_y = world_y, 
+                world_vx = world_vx, 
+                world_vy = world_vy, 
+                sz_x = sz_x, 
+                sz_y = sz_y, 
+                rotation = rotation, 
+                z_index = z_index, 
+                state = state, 
+                new_object_func = new_object_func, 
+                col_sz = col_sz
+                )
+
+class Map_object_enemy(Map_object):
+
+    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func,get_objects_func, col_sz):
+        Map_object(
+                self,
+                object_id = object_id, 
+                object_type = object_type, 
+                object_class = 'enemy', 
+                world_x = world_x, 
+                world_y = world_y, 
+                world_vx = world_vx, 
+                world_vy = world_vy, 
+                sz_x = sz_x, 
+                sz_y = sz_y, 
+                rotation = rotation, 
+                z_index = z_index, 
+                state = state, 
+                new_object_func = new_object_func, 
+                col_sz = col_sz
+                )
+        self.get_objects_func = get_objects_func
+
+class Map_object_explosive(Map_object):
+
+    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
+        Map_object(
+                self,
+                object_id = object_id, 
+                object_type = object_type, 
+                object_class = 'explosive', 
+                world_x = world_x, 
+                world_y = world_y, 
+                world_vx = world_vx, 
+                world_vy = world_vy, 
+                sz_x = sz_x, 
+                sz_y = sz_y, 
+                rotation = rotation, 
+                z_index = z_index, 
+                state = state, 
+                new_object_func = new_object_func, 
+                col_sz = col_sz
+                )
+
+class Map_object_item(Map_object):
+
+    def __init__(self, object_id, object_type, world_x, world_y, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
+        Map_object(
+                self,
+                object_id = object_id, 
+                object_type = object_type, 
+                object_class = 'item', 
+                world_x = world_x, 
+                world_y = world_y, 
+                world_vx = 0, 
+                world_vy = 0, 
+                sz_x = sz_x, 
+                sz_y = sz_y, 
+                rotation = rotation, 
+                z_index = z_index, 
+                state = state, 
+                new_object_func = new_object_func, 
+                col_sz = col_sz
+                )
+
+class Map_object_player(Map_object):
+    
+    def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
+        Map_object(
+                self,
+                object_id = object_id, 
+                object_type = object_type, 
+                object_class = 'player', 
+                world_x = world_x, 
+                world_y = world_y, 
+                world_vx = world_vx, 
+                world_vy = world_vy, 
+                sz_x = sz_x, 
+                sz_y = sz_y, 
+                rotation = rotation, 
+                z_index = z_index, 
+                state = state, 
+                new_object_func = new_object_func, 
+                col_sz = col_sz
+                )
+
+class Sphere_blue(Map_object_item):
     
     def __init__(self, object_id, world_x, world_y, new_object_func):
         
-        Map_object.__init__(self, object_id, 'sphere_blue', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        Map_object_item.__init__( 
+            self,
+            object_id = object_id, 
+            object_type = 'sphere_blue', 
+            world_x = world_x, 
+            world_y = world_y, 
+            sz_x = 50, 
+            sz_y= 50, 
+            rotation = 0, 
+            z_index = 10, 
+            state = 'idle', 
+            new_object_func = new_object_func, 
+            col_sz = 25
+         )
         
     def get_image(self):
         return('url("get_image/sphere_blue_orig_'+str(int(self.rotation/10)*10)+'.png")')
-
+        
     def update_state(self,dt):
         pass
     
@@ -83,11 +212,24 @@ class Sphere_blue(Map_object):
                     )
                     )
             
-class Health_drop1(Map_object):
+class Health_drop1(Map_object_item):
     
     def __init__(self, object_id, world_x, world_y, new_object_func):
         
-        Map_object.__init__(self, object_id, 'health_drop1', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        Map_object_item.__init__( 
+            self,
+            object_id = object_id, 
+            object_type = 'health_drop1', 
+            world_x = world_x, 
+            world_y = world_y, 
+            sz_x = 50, 
+            sz_y= 50, 
+            rotation = 0, 
+            z_index = 10, 
+            state = 'idle', 
+            new_object_func = new_object_func, 
+            col_sz = 25
+         )
         
         self.wiggle_timer = 0
         
@@ -130,11 +272,26 @@ class Health_drop3(Health_drop1):
     def get_image(self):
         return('url("get_image/health_drop3_orig_'+str(int(self.rotation/10)*10)+'.png")')
 
-class Health_collected_floater(Map_object):
+class Health_collected_floater(Map_object_decor):
     
     def __init__(self, object_id, world_x, world_y, new_object_func):
         
-        Map_object.__init__(self, object_id, 'health_collected_floater', world_x, world_y, -3, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        Map_object_decor.__init__( 
+            self,
+            object_id = object_id, 
+            object_type = 'health_collected_floater', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = -3, 
+            world_vy = 0, 
+            sz_x = 50, 
+            sz_y= 50, 
+            rotation = 0, 
+            z_index = 11, 
+            state = 'idle', 
+            new_object_func = new_object_func, 
+            col_sz = 25
+         )
         
         self.timer = 0 
         
@@ -150,11 +307,25 @@ class Health_collected_floater(Map_object):
     def collide(self, other_obj):
         pass
     
-class Orb(Map_object):
+class Orb(Map_object_explosive):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy, new_object_func ):
         
-        Map_object.__init__(self, object_id, 'orb', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'fired', new_object_func, 10)
+        Map_object_explosive.__init__(
+            self, 
+            object_id = 'orb', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = world_vx, 
+            world_vy = world_vy, 
+            sz_x = 50, 
+            sz_y = 50, 
+            rotation = 0, 
+            z_index = 12, 
+            state = 'fired', 
+            new_object_func = new_object_func , 
+            col_sz = 10
+         )
         
         self.timer = 0 
         
@@ -168,10 +339,10 @@ class Orb(Map_object):
             self.state = 'deleted'
             
     def collide(self, other_obj):
-        if (not(other_obj.object_type in ['map_tile', 'cloud', 'orb'])):
+        if (not(other_obj.object_class in ['player', 'item', 'emepy'])):
             self.state = 'deleted'
-            self.new_object_func(Cloud_black1(
-                    self.object_id + '_cloud_black1', 
+            self.new_object_func(Cloud_black2(
+                    self.object_id + '_cloud_black2', 
                     self.world_x, 
                     self.world_y, 
                     -3, 
@@ -180,11 +351,26 @@ class Orb(Map_object):
                     )
             
 
-class Cloud_white1(Map_object):
+class Cloud_white1(Map_object_decor):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
         
-        Map_object.__init__(self, object_id, 'cloud_white1', world_x, world_y, world_vx, world_vy, 50, 50, int(random.randint(0,35)*10), 10, 'generated', None, 25)
+        Map_object_decor.__init__( 
+            self,
+            object_id = object_id, 
+            object_type = 'cloud_white1', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = world_vx, 
+            world_vy = world_vy, 
+            sz_x = 50, 
+            sz_y= 50, 
+            rotation = int(random.randint(0,35)*10), 
+            z_index = 11, 
+            state = 'idle', 
+            new_object_func = None, 
+            col_sz = 25
+         )
         
         self.timer = 0 
         
@@ -240,16 +426,31 @@ class Cloud_black3(Cloud_white1):
     def get_image(self):
         return('url("get_image/black_cloud3_orig_'+str(int(self.rotation/10)*10)+'.png")')
         
-class Map_tile(Map_object):
+class Map_tile(Map_object_decor):
     
     def __init__(self, object_id, world_x, world_y, tile_coord_x, tile_coord_y, map_name ):
         
-        Map_object.__init__(self, object_id, 'map_tile', world_x, world_y, 0, 0, 50, 50, 0, 1, 'generated', None, 0)
+        Map_object_decor.__init__( 
+            self,
+            object_id = object_id, 
+            object_type = 'map_tile', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = 0, 
+            world_vy = 0, 
+            sz_x = 50, 
+            sz_y= 50, 
+            rotation = 0, 
+            z_index = 1, 
+            state = 'idle', 
+            new_object_func = None, 
+            col_sz = 25
+        )
         
         self.tile_coord_x = tile_coord_x
         self.tile_coord_y = tile_coord_y
         self.map_name = map_name
-        
+
     def get_image(self):
         return('url("get_image/'+self.map_name+'_'+str(self.tile_coord_x)+'_'+str(self.tile_coord_y)+'.png")')  
     
@@ -259,11 +460,26 @@ class Map_tile(Map_object):
     def collide(self, other_obj):
         pass
 
-class Crater1(Map_object):
+class Crater1(Map_object_decor):
     
     def __init__(self, object_id, world_x, world_y ):
         
-        Map_object.__init__(self, object_id, 'crater1', world_x, world_y, 0, 0, 50, 50, int(random.randint(0,35)*10), 4, 'generated', None, 0)
+        Map_object_decor.__init__( 
+            self,
+            object_id = object_id, 
+            object_type = 'crater1', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = 0, 
+            world_vy = 0, 
+            sz_x = 50, 
+            sz_y= 50, 
+            rotation = int(random.randint(0,35)*10), 
+            z_index = 4, 
+            state = 'idle', 
+            new_object_func = None, 
+            col_sz = 25
+        )
         
         self.timer = 0 
         
@@ -296,11 +512,27 @@ class Crater3(Cloud_white1):
         return('url("get_image/crater3_orig_'+str(int(self.rotation/10)*10)+'.png")')
         
         
-class Enemy_tower_1(Map_object):
+class Enemy_tower_1(Map_object_enemy):
     
     def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
         
-        Map_object.__init__(self, object_id, 'enemy_tower1', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        Map_object_enemy.__init__(
+            self, 
+            object_id = object_id,  
+            object_type = 'enemy_tower1', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = 0, 
+            world_vy = 0, 
+            sz_x = 50, 
+            sz_y = 50, 
+            rotation = 0, 
+            z_index = 20, 
+            state = 'idle', 
+            new_object_func = new_object_func, 
+            get_objects_func = get_objects_func,
+            col_sz = 25
+            )
         
         self.search_timer = 0
         self.fire_timer = 0
@@ -309,8 +541,6 @@ class Enemy_tower_1(Map_object):
         self.orb_counter = 0
         
         self.selected_target = None
-        
-        self.get_objects_func = get_objects_func
         
     def get_image(self):
         return('url("get_image/tower1_orig_'+str(int(self.rotation/10)*10)+'.png")')  
@@ -402,17 +632,31 @@ class Enemy_tower_3(Enemy_tower_1):
     def get_image(self):
         return('url("get_image/tower3_orig_'+str(int(self.rotation/10)*10)+'.png")') 
         
-class Airship_1(Map_object):
+class Airship_1(Map_object_enemy):
 
     def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
         
-        Map_object.__init__(self, object_id, 'airship1', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        Map_object_enemy.__init__(
+            self, 
+            object_id = object_id,  
+            object_type = 'airship1', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = 0, 
+            world_vy = 0, 
+            sz_x = 50, 
+            sz_y = 50, 
+            rotation = 0, 
+            z_index = 20, 
+            state = 'idle', 
+            new_object_func = new_object_func, 
+            get_objects_func = get_objects_func,
+            col_sz = 25
+            )
         
         self.search_timer = 0
         
         self.selected_target = None
-        
-        self.get_objects_func = get_objects_func
         
         self.speed = 1
         
@@ -483,10 +727,25 @@ class Airship_3(Airship_1):
     def get_image(self):
         return('url("get_image/airship3_orig_'+str(int(self.rotation/10)*10)+'.png")')   
 
-class Player(Map_object):
+class Player(Map_object_player):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy, new_object_func ):
-        Map_object.__init__(self, object_id, 'player', world_x, world_y, world_vx, world_vy, 50, 50, 0, 10, 'online', new_object_func, 25)
+        Map_object_player.__init__(
+                self, 
+                object_id = object_id, 
+                object_type = 'player', 
+                world_x = world_x, 
+                world_y = world_y, 
+                world_vx = world_vx, 
+                world_vy = world_vy, 
+                sz_x = 50, 
+                sz_y = 50, 
+                rotation = 0, 
+                z_index = 12, 
+                state = 'online', 
+                new_object_func = new_object_func, 
+                col_sz = 25)
+        
         self.no_input_count = 0
         self.orb_counter = 0
         self.orb_timer = 0
