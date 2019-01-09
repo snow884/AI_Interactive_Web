@@ -115,6 +115,10 @@ def frame_set():
 def index():
     return render_template('index.html')
 
+@app.route("/add_chat_post", methods=['GET', 'POST'])
+def add_chat_post():
+    return render_template('add_chat_post.html')
+
 @app.route("/get_image/<img_file>", methods=['GET', 'POST'])
 def get_img(img_file):
     

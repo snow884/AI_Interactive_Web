@@ -1,9 +1,10 @@
-<html><head>
+<html>
+<head>
 <style>
 
 body {
-    background-color : black;
-    color: green;
+    background-color : white;
+    color: black;
     margin: 0;
     padding: 0;
 }
@@ -20,20 +21,23 @@ form {
 </style>
 </head>
 <body>
-    <br><h1>Join the game ! </h1>
-      <form action="/login" method="POST" align="center">
+      <form action="/add_chat_post" method="POST" align="center">
        <table>
         <tr>
          <td>Your nickname :</td> <td><input type="user_id" name="user_id" placeholder="Your Nickname"></td><br>
         </tr>
         <tr>
-         <td></td> <td><img src="/get_capcha_img1" alt="capcha image"></td><br>
+         <td></td> <td><img src="/get_capcha_img1_chat" alt="capcha image"></td><br>
         </tr>
         <tr>
          <td>Capcha (all lower case) :</td> <td><input type="capcha" name="capcha" placeholder="Text from the image"></td><br>
         </tr>
         <tr>
-         <td></td> <td><input type="submit" value="Submit"></td>
+         <td colspan="2">Your comments :<br><TEXTAREA name="thetext" rows="20" cols="40">
+   </TEXTAREA></td><br>
+        </tr>
+        <tr>
+         <td colspan="2"><input type="submit" value="Submit"></td>
         </tr>
        </table>
       </form>
