@@ -66,26 +66,26 @@ def init_score_screen():
 @app.route('/login', methods=['GET', 'POST'])
 def do_login():
     
-#    if (session['capcha_solution']==request.form['capcha']):
-#  
-#        if (len(request.form['user_id'])<8):
-#            return login_screen('short_user_id')
-#        else:
-    player_id = request.form['user_id']
-    
-    objects_new_raw = obj_data_queue.get(player_id)
-    if (objects_new_raw is None):
-        
-        session['user_id'] = player_id    
-        session['objects'] = []
-        
-        user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
-        
-        return game_renderer()
-#            else:
-#                return login_screen('player_exists')
-#    else:
-#        return login_screen('incorrect_capcha')
+    if (session['capcha_solution']==request.form['capcha']):
+  
+        if (len(request.form['user_id'])<8):
+            return login_screen('short_user_id')
+        else:
+            player_id = request.form['user_id']
+            
+            objects_new_raw = obj_data_queue.get(player_id)
+            if (objects_new_raw is None):
+                
+                session['user_id'] = player_id    
+                session['objects'] = []
+                
+                user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
+                
+                return game_renderer()
+            else:
+                return login_screen('player_exists')
+    else:
+        return login_screen('incorrect_capcha')
     
 @app.route('/get_capcha_img1', methods=['GET', 'POST'])
 def get_capcha_img():
@@ -104,9 +104,13 @@ def game_renderer():
 def login_screen(warning_type):
     if (warning_type=='initial_ok'):
         return render_template('login.html')
-    else:
-        return render_template('login.html')
-    
+    if (warning_type=='short_user_id'):
+        return render_template('login.html',context_info = "Your username must have at least 8 characters!")
+    if (warning_type=='incorrect_capcha'):
+        return render_template('login.html',context_info = "The capcha you have typed in is incorrect! Are you a robot ?")
+    if (warning_type=='game_exit'):
+    return render_template('login.html',context_info = "The game exited")
+
 @app.route("/frame_set", methods=['GET', 'POST'])
 def frame_set():
     return render_template('frame_set.html')
