@@ -21,49 +21,6 @@ con_data_queue = redis.Redis(host='localhost', port=6379, db=1)
 user_data_queue = redis.Redis(host='localhost', port=6379, db=2)
 log_queue = redis.Redis(host='localhost', port=6379, db=3)
 
-def my_init():
-    
-    context = {}
-    
-    context["time"] = 0
-    
-    context["x_center"] = 500
-    context["y_center"] = 500
-    
-    objects = []
-    
-    return objects, context
-
-def my_update(controls, player_id, map_in, context):
-    
-    player_object = map_in.get_object(player_id)
-    
-    objects_out = map_in.get_objects(player_object.world_x,player_object.world_y,400,400)
-    
-    objects = []
-    
-    for obj_id, obj_out in enumerate(objects_out):
-        objects.append({})
-        
-        objects[len(objects)-1]['id'] = obj_out.object_id
-        objects[len(objects)-1]['width'] = obj_out.sz_x
-        objects[len(objects)-1]['height'] = obj_out.sz_y 
-        objects[len(objects)-1]['position'] = "absolute" 
-        objects[len(objects)-1]['top'] = obj_out.world_x - player_object.world_x - obj_out.sz_x/2 + 200
-        objects[len(objects)-1]['left'] = obj_out.world_y - player_object.world_y - obj_out.sz_y/2 + 200
-        objects[len(objects)-1]['backgroundColor'] = ""
-        objects[len(objects)-1]['backgroundImage'] = obj_out.get_image()
-        objects[len(objects)-1]['zIndex'] = obj_out.z_index
-    
-    angle = 180+10*int(math.atan2(float(controls["mouse_x"])-200, float(controls["mouse_y"])-200)/(2*math.pi)*360/10)
-    
-    player_control_vx = - math.cos(angle/360*2*math.pi)*5
-    player_control_vy = - math.cos(angle/360*2*math.pi)*5
-    
-    map_in.control_player(player_id, player_control_vx, player_control_vy, angle)
-    
-    return objects, context
-
 class Map_object:
     
     def __init__(self, object_id, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
@@ -118,26 +75,34 @@ class Sphere_blue(Map_object):
     def collide(self, other_obj):
         if (other_obj.object_type=='orb'):
             self.state = 'deleted'
-            self.new_object_func(Health_box(
-                    self.object_id + '_health_drop', 
+            self.new_object_func(Health_drop1(
+                    self.object_id + '_health_drop1', 
                     self.world_x,
                     self.world_y,
                     self.new_object_func
                     )
                     )
             
-class Health_box(Map_object):
+class Health_drop1(Map_object):
     
     def __init__(self, object_id, world_x, world_y, new_object_func):
         
-        Map_object.__init__(self, object_id, 'health_box', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        Map_object.__init__(self, object_id, 'health_drop1', world_x, world_y, 0, 0, 50, 50, 0, 10, 'idle', new_object_func, 25)
+        
+        self.wiggle_timer = 0
         
     def get_image(self):
-        return('url("get_image/health_box_orig_'+str(int(self.rotation/10)*10)+'.png")')
-
+        return('url("get_image/health_drop1_orig_'+str(int(self.rotation/10)*10)+'.png")')
+        
     def update_state(self,dt):
-        pass
-    
+        self.wiggle_timer = self.wiggle_timer + dt
+        
+        self.rotation = self.rotation + 20*math.cos(self.wiggle_timer/5*2*math.pi)
+        
+        if (self.wiggle_timer > 5):
+            self.wiggle_timer = 0
+            self.rotation = 0
+            
     def collide(self, other_obj):
         if (other_obj.object_type=='player'):
             self.state = 'deleted'
@@ -148,7 +113,23 @@ class Health_box(Map_object):
                     self.new_object_func
                     )
                     )
-            
+
+class Health_drop2(Health_drop1):
+    def __init__(self, object_id, world_x, world_y, new_object_func ):
+        Health_drop1.__init__(self, object_id, world_x, world_y, new_object_func )
+        self.object_type = 'health_drop2'
+        
+    def get_image(self):
+        return('url("get_image/health_drop2_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
+class Health_drop3(Health_drop1):
+    def __init__(self, object_id, world_x, world_y, new_object_func ):
+        Health_drop1.__init__(self, object_id, world_x, world_y, new_object_func )
+        self.object_type = 'health_drop3'
+        
+    def get_image(self):
+        return('url("get_image/health_drop3_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
 class Health_collected_floater(Map_object):
     
     def __init__(self, object_id, world_x, world_y, new_object_func):
@@ -189,8 +170,8 @@ class Orb(Map_object):
     def collide(self, other_obj):
         if (not(other_obj.object_type in ['map_tile', 'cloud', 'orb'])):
             self.state = 'deleted'
-            self.new_object_func(Cloud(
-                    self.object_id + '_cloud', 
+            self.new_object_func(Cloud_black1(
+                    self.object_id + '_cloud_black1', 
                     self.world_x, 
                     self.world_y, 
                     -3, 
@@ -199,16 +180,16 @@ class Orb(Map_object):
                     )
             
 
-class Cloud(Map_object):
+class Cloud_white1(Map_object):
     
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
         
-        Map_object.__init__(self, object_id, 'cloud', world_x, world_y, world_vx, world_vy, 50, 50, int(random.randint(0,35)*10), 10, 'generated', None, 25)
+        Map_object.__init__(self, object_id, 'cloud_white1', world_x, world_y, world_vx, world_vy, 50, 50, int(random.randint(0,35)*10), 10, 'generated', None, 25)
         
         self.timer = 0 
         
     def get_image(self):
-        return('url("get_image/cloud1_orig_'+str(int(self.rotation/10)*10)+'.png")')  
+        return('url("get_image/white_cloud1_orig_'+str(int(self.rotation/10)*10)+'.png")')  
     
     def update_state(self,dt):
         self.timer = self.timer + dt
@@ -219,13 +200,52 @@ class Cloud(Map_object):
     def collide(self, other_obj):
         pass
     
+class Cloud_white2(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        Cloud_white1.__init__(self, object_id, world_x, world_y, world_vx, world_vy )
+        self.object_type = 'cloud_white2'
+        
+    def get_image(self):
+        return('url("get_image/white_cloud2_orig_'+str(int(self.rotation/10)*10)+'.png")')
+  
+class Cloud_white3(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        Cloud_white1.__init__(self, object_id, world_x, world_y, world_vx, world_vy )
+        self.object_type = 'cloud_white3'
+        
+    def get_image(self):
+        return('url("get_image/white_cloud3_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
+class Cloud_black1(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        Cloud_white1.__init__(self, object_id, world_x, world_y, world_vx, world_vy )
+        self.object_type = 'cloud_black1'
+        
+    def get_image(self):
+        return('url("get_image/black_cloud1_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
+class Cloud_black2(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        Cloud_white1.__init__(self, object_id, world_x, world_y, world_vx, world_vy )
+        self.object_type = 'cloud_black2'
+        
+    def get_image(self):
+        return('url("get_image/black_cloud2_orig_'+str(int(self.rotation/10)*10)+'.png")')
+
+class Cloud_black3(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y, world_vx, world_vy ):
+        Cloud_white1.__init__(self, object_id, world_x, world_y, world_vx, world_vy )
+        self.object_type = 'cloud_black3'
+        
+    def get_image(self):
+        return('url("get_image/black_cloud3_orig_'+str(int(self.rotation/10)*10)+'.png")')
+        
 class Map_tile(Map_object):
     
     def __init__(self, object_id, world_x, world_y, tile_coord_x, tile_coord_y, map_name ):
         
         Map_object.__init__(self, object_id, 'map_tile', world_x, world_y, 0, 0, 50, 50, 0, 1, 'generated', None, 0)
         
-        self.timer = 0 
         self.tile_coord_x = tile_coord_x
         self.tile_coord_y = tile_coord_y
         self.map_name = map_name
@@ -239,6 +259,43 @@ class Map_tile(Map_object):
     def collide(self, other_obj):
         pass
 
+class Crater1(Map_object):
+    
+    def __init__(self, object_id, world_x, world_y ):
+        
+        Map_object.__init__(self, object_id, 'crater1', world_x, world_y, 0, 0, 50, 50, int(random.randint(0,35)*10), 4, 'generated', None, 0)
+        
+        self.timer = 0 
+        
+    def get_image(self):
+        return('url("get_image/crater1_orig_'+str(int(self.rotation/10)*10)+'.png")')  
+    
+    def update_state(self,dt):
+        self.timer = self.timer + dt
+        
+        if (self.timer>400):
+            self.state = 'deleted'
+            
+    def collide(self, other_obj):
+        pass
+    
+class Crater2(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y):
+        Crater1.__init__(self, object_id, world_x, world_y )
+        self.object_type = 'crater2'
+        
+    def get_image(self):
+        return('url("get_image/crater2_orig_'+str(int(self.rotation/10)*10)+'.png")')
+    
+class Crater3(Cloud_white1):
+    def __init__(self, object_id, world_x, world_y):
+        Crater1.__init__(self, object_id, world_x, world_y )
+        self.object_type = 'crater3'
+        
+    def get_image(self):
+        return('url("get_image/crater3_orig_'+str(int(self.rotation/10)*10)+'.png")')
+        
+        
 class Enemy_tower_1(Map_object):
     
     def __init__(self, object_id, world_x, world_y, new_object_func, get_objects_func ):
@@ -487,12 +544,12 @@ class Player(Map_object):
         if (self.orb_timer>10):
             self.orb_timer = 0
             self.new_object_func(
-                    Cloud(
-                        self.object_id + '_cloud_' + str(self.orb_counter), 
-                        self.world_x+math.cos(self.rotation/360*2*math.pi)*50, 
-                        self.world_y+math.sin(self.rotation/360*2*math.pi)*50, 
-                        math.cos(self.rotation/360*2*math.pi)*2, 
-                        math.sin(self.rotation/360*2*math.pi)*2 
+                    Cloud_white2(
+                        self.object_id + '_cloud_white2_' + str(self.orb_counter), 
+                        self.world_x+math.cos(self.rotation/360*2*math.pi)*10, 
+                        self.world_y+math.sin(self.rotation/360*2*math.pi)*10, 
+                        math.cos(self.rotation/360*2*math.pi)*1, 
+                        math.sin(self.rotation/360*2*math.pi)*1 
                     )
                 )
         
@@ -748,21 +805,7 @@ class World_map:
         
 class my_environment:
 
-    def __init__(self, update_function, init_function):
-        
-        print('environment init')
-        
-        self.objects = []
-        self.context = []
-        
-        self.objects, self.context = init_function()
-        
-        self.controls_active = []
-        
-        self.screen_y = 10
-        self.screen_y = 10
-        
-        self.update_function = update_function
+    def __init__(self):
         
         self.map = World_map(5000,5000)
         
@@ -771,7 +814,7 @@ class my_environment:
     
 if __name__ == "__main__":
     
-    global_environment = my_environment(my_update, my_init)
+    global_environment = my_environment()
     
     while True:
         global_environment.update()
