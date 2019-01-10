@@ -50,7 +50,7 @@ def update():
     if request.method == "POST":
         
         control_data = request.get_json()
-        con_data_queue.set(str(session['user_id']), json.dumps( control_data ), px = 200 )
+        con_data_queue.set(str(session['user_id']), json.dumps( control_data ), px = 1000 )
         
         instruction_list = get_instr_update( session['user_id'] )
         
@@ -81,6 +81,17 @@ def do_login():
         
         user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
         
+        log_queue.lpush(
+        'website_log', 
+        json.dumps( 
+                {
+                    'ip':request.remote_addr,
+                    'func':'do_login',
+                    'user_id':player_id
+                } 
+            ) 
+        )
+        
         return game_renderer()
 #            else:
 #                return login_screen('player_exists')
@@ -94,19 +105,61 @@ def get_capcha_img():
     session['capcha_solution'] = generate_capcha()
     data = image.generate(session['capcha_solution'])
     
+    log_queue.lpush(
+            'website_log', 
+            json.dumps( 
+                    {
+                        'ip':request.remote_addr,
+                        'func':'get_capcha_img',
+                        'capcha_solution':session['capcha_solution']
+                    } 
+                ) 
+            )
+            
     return send_file(data, mimetype='image/png')
 
 @app.route('/get_website_img/<img_name>', methods=['GET', 'POST'])
 def get_website_img(img_name):
-    
+
+    log_queue.lpush(
+            'website_log', 
+            json.dumps( 
+                    {
+                        'ip':request.remote_addr,
+                        'func':'get_website_img',
+                        'img_name':img_name
+                    } 
+                ) 
+            )
     return send_file('templates/static/images/' + img_name, mimetype='image/jpeg')
 
 @app.route("/game_renderer", methods=['GET', 'POST'])
 def game_renderer():
+    log_queue.lpush(
+            'website_log', 
+            json.dumps( 
+                    {
+                        'ip':request.remote_addr,
+                        'func':'game_renderer'
+                    } 
+                ) 
+            )
     return render_template("game_renderer.html")
         
 @app.route("/login_screen/<warning_type>", methods=['GET', 'POST'])
 def login_screen(warning_type):
+    
+    log_queue.lpush(
+            'website_log', 
+            json.dumps( 
+                    {
+                        'ip':request.remote_addr,
+                        'func':'login_screen',
+                        'warning_type':warning_type
+                    } 
+                ) 
+            )
+    
     if (warning_type=='initial_ok'):
         return render_template('login.html')
     if (warning_type=='short_user_id'):
@@ -122,11 +175,21 @@ def frame_set():
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    log_queue.lpush(
+            'website_log', 
+            json.dumps( 
+                    {
+                        'ip':request.remote_addr,
+                        'func':'index'
+                    } 
+                ) 
+            )
+            
     return render_template('index.html')
 
-@app.route("/add_chat_post", methods=['GET', 'POST'])
-def add_chat_post():
-    return render_template('add_chat_post.html')
+#@app.route("/add_chat_post", methods=['GET', 'POST'])
+#def add_chat_post():
+#    return render_template('add_chat_post.html')
 
 @app.route("/get_image/<img_file>", methods=['GET', 'POST'])
 def get_img(img_file):

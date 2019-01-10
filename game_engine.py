@@ -191,7 +191,7 @@ class Sphere_blue(Map_object_item):
         
         Map_object_item.__init__( 
             self,
-            object_type = 'sphere_blue', 
+            object_type = 'Sphere_blue', 
             world_x = world_x, 
             world_y = world_y, 
             sz_x = 50, 
@@ -226,7 +226,7 @@ class Health_drop1(Map_object_item):
         
         Map_object_item.__init__( 
             self,
-            object_type = 'health_drop1', 
+            object_type = 'Health_drop1', 
             world_x = world_x, 
             world_y = world_y, 
             sz_x = 50, 
@@ -266,7 +266,7 @@ class Health_drop1(Map_object_item):
 class Health_drop2(Health_drop1):
     def __init__(self, world_x, world_y, new_object_func ):
         Health_drop1.__init__(self, world_x, world_y, new_object_func )
-        self.object_type = 'health_drop2'
+        self.object_type = 'Health_drop2'
         
     def get_image(self):
         #return('url("get_image/health_drop2_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -275,7 +275,7 @@ class Health_drop2(Health_drop1):
 class Health_drop3(Health_drop1):
     def __init__(self, world_x, world_y, new_object_func ):
         Health_drop1.__init__(self, world_x, world_y, new_object_func )
-        self.object_type = 'health_drop3'
+        self.object_type = 'Health_drop3'
         
     def get_image(self):
         #return('url("get_image/health_drop3_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -287,7 +287,7 @@ class Health_collected_floater(Map_object_decor):
         
         Map_object_decor.__init__( 
             self,
-            object_type = 'health_collected_floater', 
+            object_type = 'Health_collected_floater', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = -3, 
@@ -322,7 +322,7 @@ class Orb(Map_object_explosive):
         
         Map_object_explosive.__init__(
             self, 
-            object_type = 'orb', 
+            object_type = 'Orb', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = world_vx, 
@@ -349,7 +349,7 @@ class Orb(Map_object_explosive):
             self.state = 'deleted'
             
     def collide(self, other_obj):
-        if (( not(other_obj.object_class in ['decorative'])) & (not(other_obj.object_type in ['orb']))):
+        if (( not(other_obj.object_class in ['decorative'])) & (not(other_obj.object_class in ['explosive']))):
             self.state = 'deleted'
             self.new_object_func(Cloud_black2(
                     self.world_x, 
@@ -366,7 +366,7 @@ class Cloud_white1(Map_object_decor):
         
         Map_object_decor.__init__( 
             self,
-            object_type = 'cloud_white1', 
+            object_type = 'Cloud_white1', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = world_vx, 
@@ -397,7 +397,7 @@ class Cloud_white1(Map_object_decor):
 class Cloud_white2(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'cloud_white2'
+        self.object_type = 'Cloud_white2'
         
     def get_image(self):
         #return('url("get_image/white_cloud2_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -405,7 +405,7 @@ class Cloud_white2(Cloud_white1):
 class Cloud_white3(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'cloud_white3'
+        self.object_type = 'Cloud_white3'
         
     def get_image(self):
         #return('url("get_image/white_cloud3_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -414,7 +414,7 @@ class Cloud_white3(Cloud_white1):
 class Cloud_black1(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'cloud_black1'
+        self.object_type = 'Cloud_black1'
         
     def get_image(self):
         return('url("get_image/black_cloud1_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -422,7 +422,7 @@ class Cloud_black1(Cloud_white1):
 class Cloud_black2(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'cloud_black2'
+        self.object_type = 'Cloud_black2'
         
     def get_image(self):
         #return('url("get_image/black_cloud2_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -431,7 +431,7 @@ class Cloud_black2(Cloud_white1):
 class Cloud_black3(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'explosion1'
+        self.object_type = 'Cloud_black3'
         
     def get_image(self):
         #return('url("get_image/black_cloud3_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -440,7 +440,7 @@ class Cloud_black3(Cloud_white1):
 class Explosion1(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'explosion1'
+        self.object_type = 'Explosion1'
         
     def get_image(self):
         #return('url("get_image/explosion1_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -449,7 +449,7 @@ class Explosion1(Cloud_white1):
 class Explosion2(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'explosion2'
+        self.object_type = 'Explosion2'
         
     def get_image(self):
         #return('url("get_image/explosion2_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -458,7 +458,7 @@ class Explosion2(Cloud_white1):
 class Explosion3(Cloud_white1):
     def __init__(self, world_x, world_y, world_vx, world_vy ):
         Cloud_white1.__init__(self, world_x, world_y, world_vx, world_vy )
-        self.object_type = 'explosion3'
+        self.object_type = 'Explosion3'
         
     def get_image(self):
         #return('url("get_image/explosion3_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -470,7 +470,7 @@ class Map_tile(Map_object_decor):
         
         Map_object_decor.__init__( 
             self, 
-            object_type = 'map_tile', 
+            object_type = 'Map_tile', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = 0, 
@@ -503,7 +503,7 @@ class Crater1(Map_object_decor):
         
         Map_object_decor.__init__( 
             self,
-            object_type = 'crater1', 
+            object_type = 'Crater1', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = 0, 
@@ -535,7 +535,7 @@ class Crater1(Map_object_decor):
 class Crater2(Crater1):
     def __init__(self, world_x, world_y):
         Crater1.__init__(self, world_x, world_y )
-        self.object_type = 'crater2'
+        self.object_type = 'Crater2'
         
     def get_image(self):
         #return('url("get_image/crater2_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -544,7 +544,7 @@ class Crater2(Crater1):
 class Crater3(Crater1):
     def __init__(self, world_x, world_y):
         Crater1.__init__(self, world_x, world_y )
-        self.object_type = 'crater3'
+        self.object_type = 'Crater3'
         
     def get_image(self):
         #return('url("get_image/crater3_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -556,7 +556,7 @@ class Enemy_tower_1(Map_object_enemy):
         
         Map_object_enemy.__init__(
             self, 
-            object_type = 'enemy_tower1', 
+            object_type = 'Enemy_tower_1', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = 0, 
@@ -592,7 +592,7 @@ class Enemy_tower_1(Map_object_enemy):
             objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
             
             payers_nearby_list = np.array( [el for el in objects_nearby_list if (
-                    (el.object_type=='player')
+                    (el.object_class=='player')
                 )] )
             
             if (len(payers_nearby_list)>0):
@@ -672,7 +672,7 @@ class Enemy_tower_1(Map_object_enemy):
                     0
                     )
                     )
-            if (other_obj.object_type in ['orb']):
+            if (other_obj.object_class in ['explosive']):
                 self.new_object_func(Explosion2(
                         self.world_x, 
                         self.world_y, 
@@ -692,7 +692,7 @@ class Enemy_tower_2(Enemy_tower_1):
     
     def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
         Enemy_tower_1.__init__(self, world_x, world_y, new_object_func, get_objects_func )
-        self.object_type = 'enemy_tower2'
+        self.object_type = 'Enemy_tower_2'
         self.fire_interval = 10
         
     def get_image(self):
@@ -735,7 +735,7 @@ class Enemy_tower_2(Enemy_tower_1):
 class Enemy_tower_3(Enemy_tower_1):
     def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
         Enemy_tower_1.__init__(self, world_x, world_y, new_object_func, get_objects_func )
-        self.object_type = 'enemy_tower3'
+        self.object_type = 'Enemy_tower_3'
         self.fire_interval = 5
         
     def get_image(self):
@@ -768,7 +768,7 @@ class Enemy_tower_3(Enemy_tower_1):
                     )
                     )
                     
-            if (other_obj.object_type in ['orb']):
+            if (other_obj.object_class in ['explosive']):
                 self.new_object_func(Health_drop1(
                         self.world_x + int(random.randint(0,50)-25), 
                         self.world_y + int(random.randint(0,50)-25), 
@@ -789,7 +789,7 @@ class Airship_1(Map_object_enemy):
         
         Map_object_enemy.__init__(
             self, 
-            object_type = 'airship1', 
+            object_type = 'Airship_1', 
             world_x = world_x, 
             world_y = world_y, 
             world_vx = 0, 
@@ -819,7 +819,7 @@ class Airship_1(Map_object_enemy):
             objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
             
             payers_nearby_list = np.array( [el for el in objects_nearby_list if (
-                    (el.object_type=='player')
+                    (el.object_class=='player')
                 )] )
             
             if (len(payers_nearby_list)>0):
@@ -879,7 +879,7 @@ class Airship_1(Map_object_enemy):
 class Airship_2(Airship_1):
     def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
         Airship_1.__init__(self, world_x, world_y, new_object_func, get_objects_func )
-        self.object_type = 'airship2'
+        self.object_type = 'Airship_2'
         self.speed = 2
         
     def get_image(self):
@@ -889,7 +889,7 @@ class Airship_2(Airship_1):
 class Airship_3(Airship_1):
     def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
         Airship_1.__init__(self, world_x, world_y, new_object_func, get_objects_func )
-        self.object_type = 'airship3'
+        self.object_type = 'Airship_3'
         self.speed = 3.5
 
     def get_image(self):
@@ -901,7 +901,7 @@ class Text_label(Map_object_decor):
     def __init__(self, obj_follow, text_in ):
         Map_object_decor.__init__(
                 self, 
-                object_type = 'text_label', 
+                object_type = 'Text_label', 
                 world_x = obj_follow.world_x, 
                 world_y = obj_follow.world_y, 
                 world_vx = 0, 
@@ -935,7 +935,7 @@ class Player(Map_object_player):
     def __init__(self, object_id, world_x, world_y, world_vx, world_vy, new_object_func ):
         Map_object_player.__init__(
                 self, 
-                object_type = 'player', 
+                object_type = 'Player', 
                 world_x = world_x, 
                 world_y = world_y, 
                 world_vx = world_vx, 
@@ -956,6 +956,16 @@ class Player(Map_object_player):
         self.health = 8
         
         self.new_object_func(Text_label(self, self.object_id))
+        
+        log_queue.lpush(
+            'gameplay_log', 
+            json.dumps( 
+                    {
+                        'action':'login',
+                        'player_id':object_id
+                    } 
+                ) 
+            )
         
     def get_image(self):
         #return('url("get_image/plane_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -1039,7 +1049,7 @@ class Player(Map_object_player):
         
         if (self.no_input_count*dt > 10):
             self.death('💤 U were logged off due to inactivity!')
-        
+            
     def death(self, message):
         
         self.state = 'deleted'
@@ -1050,6 +1060,17 @@ class Player(Map_object_player):
         data["infobanner_text"] = '\r\n \r\n \r\n' + message
         
         obj_data_queue.set(self.object_id ,json.dumps(data), px = 200 )
+
+        log_queue.lpush(
+            'gameplay_log', 
+            json.dumps( 
+                    {
+                        'action':'logout',
+                        'player_id': self.object_id,
+                        'message':message
+                    } 
+                ) 
+            )
             
     def sustain_damage(self, damage):
         self.health = self.health - damage
@@ -1071,7 +1092,7 @@ class Player(Map_object_player):
                 )
     
         if (self.health<=0):
-            self.death('😵🔫 You were killed')
+            self.death("😵🔫 You've been killed")
 
     def heal(self, heanth_added):
         self.health = self.health + heanth_added
@@ -1081,17 +1102,17 @@ class Player(Map_object_player):
     def collide(self, other_obj):
         if ( 
             (not(other_obj.object_class in 'decorative')) 
-            & (not(other_obj.object_type in ['health_drop1','health_drop2','health_drop3']) )
+            & (not(other_obj.object_type in ['Health_drop1','Health_drop2','Health_drop3']) )
             ):
             self.sustain_damage(1)
             
-        if (other_obj.object_type == 'health_drop1'):
+        if (other_obj.object_type == 'Health_drop1'):
             self.heal(1)
 
-        if (other_obj.object_type == 'health_drop2'):
+        if (other_obj.object_type == 'Health_drop2'):
             self.heal(2)
 
-        if (other_obj.object_type == 'health_drop3'):
+        if (other_obj.object_type == 'Health_drop3'):
             self.heal(3)
          
     def get_status_text(self):
@@ -1115,71 +1136,16 @@ class World_map:
         
         self.object_list = []
         
-        for i in range(0,100):
-            self.object_list.append(
-                    Sphere_blue(
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object
-                            )
-                    )
-
-        for i in range(0,50):
-            self.object_list.append(
-                    Enemy_tower_1(
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object,
-                            self.get_objects
-                            )
-                    )
+        self.population_counts = {
+                "Sphere_blue":100,
+                "Enemy_tower_1":100,
+                "Enemy_tower_2":50,
+                "Enemy_tower_3":30,
+                "Airship_1":200,
+                "Airship_2":50,
+                "Airship_3":20,
+                }
         
-        for i in range(0,50):
-            self.object_list.append(
-                    Enemy_tower_2(
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object,
-                            self.get_objects
-                            )
-                    )
-                    
-        for i in range(0,50):
-            self.object_list.append(
-                    Enemy_tower_3(
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object,
-                            self.get_objects
-                            )
-                    )   
-        for i in range(0,50):
-            self.object_list.append(
-                    Airship_1(
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object,
-                            self.get_objects
-                            )
-                    )   
-        for i in range(0,50):
-            self.object_list.append(
-                    Airship_2( 
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object,
-                            self.get_objects
-                            )
-                    )   
-        for i in range(0,50):
-            self.object_list.append(
-                    Airship_3(
-                            random.randint(1,sz_x), 
-                            random.randint(1,sz_y),
-                            self.add_object,
-                            self.get_objects
-                            )
-                    )   
         for x_id in range(0,100):
             for y_id in range(0,100):
                 self.object_list.append(
@@ -1191,10 +1157,93 @@ class World_map:
                             'Map1' 
                             )
                         )
-                
-    def balance_population():
-        pass
+                        
+        self.balance_population()
+                        
+    def place_object(self, object_type):
+        
+        if (object_type=='Sphere_blue'):
+            self.object_list.append(
+                    Sphere_blue(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object
+                            )
+                    )
 
+        if (object_type=='Enemy_tower_1'):
+            self.object_list.append(
+                    Enemy_tower_1(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )
+        
+        if (object_type=='Enemy_tower_2'):
+            self.object_list.append(
+                    Enemy_tower_2(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )
+                    
+        if (object_type=='Enemy_tower_3'):
+            self.object_list.append(
+                    Enemy_tower_3(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        if (object_type=='Airship_1'):
+            self.object_list.append(
+                    Airship_1(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        if (object_type=='Airship_2'):
+            self.object_list.append(
+                    Airship_2( 
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        if (object_type=='Airship_3'):
+            self.object_list.append(
+                    Airship_3(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+    
+    def balance_population(self):
+        
+        object_type_list = [el.object_type for el in self.object_list if not(el.object_class in ['decorative','player','explosive'])]
+        
+        occurrences = dict(zip( 
+                        [el for el in set(object_type_list)],[object_type_list.count(el) for el in set(object_type_list)] 
+                    ))
+        
+        for obj_type in list(self.population_counts):
+            if obj_type in occurrences.keys():
+                if (occurrences[obj_type] < self.population_counts[obj_type]):
+                    for i in range(0, self.population_counts[obj_type] - occurrences[obj_type]):
+                        self.place_object(obj_type)
+            else:
+                self.place_object(obj_type)
+        
     def get_object(self, object_id): 
         
         for my_obj in self.object_list: 
@@ -1221,12 +1270,12 @@ class World_map:
         
         if not(new_player_id_raw is None):
             new_player_id = str(json.loads( new_player_id_raw) )
-            if (not(new_player_id in [el.object_id for el in self.object_list if (el.object_type=='player')])):
+            if (not(new_player_id in [el.object_id for el in self.object_list if (el.object_class=='player')])):
                 self.add_object( Player(new_player_id, 2500, 2500, 0, 0, self.add_object ) )
                 
         #send players their data
         
-        player_obj_list = [el for el in self.object_list if (el.object_type=='player')]
+        player_obj_list = [el for el in self.object_list if (el.object_class=='player')]
         
         all_visible_object_ids = []
         
@@ -1249,7 +1298,7 @@ class World_map:
                 objects[len(objects)-1]['backgroundImage'] = obj_out.get_image()
                 objects[len(objects)-1]['zIndex'] = obj_out.z_index
                 objects[len(objects)-1]['textContent'] = obj_out.textContent
-            
+                
             all_visible_object_ids+=object_ids
             
             #logging_info = log_queue.get(player_obj.object_id)
@@ -1275,6 +1324,9 @@ class World_map:
         
         for obj_id in range(0,len(self.object_list) ):
             self.object_list[obj_id].update_state(self.dt)
+        
+        #replace deleted / destroyed objects
+        self.balance_population()
         
     def get_objects(self, x_center, y_center, box_h, box_w):    
         
@@ -1316,6 +1368,10 @@ class my_environment:
     
 if __name__ == "__main__":
     
+    obj_data_queue.flushall()
+    con_data_queue.flushall()
+    user_data_queue.flushall()
+        
     global_environment = my_environment()
     
     while True:

@@ -112,6 +112,8 @@ function preload() {
     req.send([]);
 }
 
+images = []
+
 function preload_images(imageArray)
 {
     document.getElementById("myInfobanner").textContent = "\r\n \r\n \r\n Loading images";
@@ -468,8 +470,7 @@ function myAnimation()
   return(my_timer)
 }
 
-preload()
-do_redraw()
+//preload()
 global_timer = myAnimation()
 
 </script>
