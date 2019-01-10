@@ -29,7 +29,7 @@ class My_log:
             
             print(log_val)
             
-            if (len(buffer_log) > 2000):
+            if (len(buffer_log) > 100):
                 with open('log_data/' + self.key_name + '_' + time.strftime("%Y%m%d%H%M%S", time.gmtime()) + ".csv", 'w') as f:
                     f.write( buffer_log )
                     
