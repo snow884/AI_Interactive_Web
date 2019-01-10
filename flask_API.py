@@ -85,7 +85,7 @@ def do_login():
         'website_log', 
         json.dumps( 
                 {
-                    'ip':request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                    'ip':request.access_route[-1],
                     'func':'do_login',
                     'user_id':player_id
                 } 
@@ -109,7 +109,7 @@ def get_capcha_img():
             'website_log', 
             json.dumps( 
                     {
-                        'ip':request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                        'ip':request.access_route[-1],
                         'func':'get_capcha_img',
                         'capcha_solution':session['capcha_solution']
                     } 
@@ -125,7 +125,7 @@ def get_website_img(img_name):
             'website_log', 
             json.dumps( 
                     {
-                        'ip':request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                        'ip':request.access_route[-1],
                         'func':'get_website_img',
                         'img_name':img_name
                     } 
@@ -139,7 +139,7 @@ def game_renderer():
             'website_log', 
             json.dumps( 
                     {
-                        'ip':request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                        'ip':request.access_route[-1],
                         'func':'game_renderer'
                     } 
                 ) 
@@ -153,7 +153,7 @@ def login_screen(warning_type):
             'website_log', 
             json.dumps( 
                     {
-                        'ip':request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                        'ip':request.access_route[-1],
                         'func':'login_screen',
                         'warning_type':warning_type
                     } 
@@ -179,7 +179,7 @@ def index():
             'website_log', 
             json.dumps( 
                     {
-                        'request':request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                        'request':request.access_route[-1],
                         'func':'index'
                     } 
                 ) 
