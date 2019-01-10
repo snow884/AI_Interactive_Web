@@ -15,6 +15,7 @@ class My_log:
     
     def __init__(self, key_name):
         self.key_name = key_name
+        self.last_save_date = time.strftime("%Y%m%d", time.gmtime())
     
     def update(self):
         
@@ -29,13 +30,13 @@ class My_log:
             
             print(log_val)
             
-            if (len(buffer_log) > 100):
+            if (len(buffer_log) > 50000000) | (not(self.curr_date == time.strftime("%Y%m%d", time.gmtime()))):
                 with open('log_data/' + self.key_name + '_' + time.strftime("%Y%m%d%H%M%S", time.gmtime()) + ".csv", 'w') as f:
                     f.write( buffer_log )
                     
                 buffer_log = ''
-    
             
+            self.curr_date = time.strftime("%Y%m%d", time.gmtime())
             log_val = log_queue.rpop(self.key_name)
             
 if __name__ == "__main__":
