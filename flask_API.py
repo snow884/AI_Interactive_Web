@@ -179,7 +179,7 @@ def index():
             'website_log', 
             json.dumps( 
                     {
-                        'request':request,
+                        'request':request.environ['REMOTE_ADDR'],
                         'func':'index'
                     } 
                 ) 
