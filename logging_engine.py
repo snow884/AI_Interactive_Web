@@ -28,15 +28,13 @@ class My_log:
             
             buffer_log += str(time_stamp) + ', ' + str(log_val.decode("utf-8")) + '\n'
             
-            print(log_val)
-            
-            if (len(buffer_log) > 50000000) | (not(self.curr_date == time.strftime("%Y%m%d", time.gmtime()))):
+            if (len(buffer_log) > 50000000) | (not(self.last_save_date == time.strftime("%Y%m%d", time.gmtime()))):
                 with open('log_data/' + self.key_name + '_' + time.strftime("%Y%m%d%H%M%S", time.gmtime()) + ".csv", 'w') as f:
                     f.write( buffer_log )
                     
                 buffer_log = ''
             
-            self.curr_date = time.strftime("%Y%m%d", time.gmtime())
+            self.last_save_date = time.strftime("%Y%m%d", time.gmtime())
             log_val = log_queue.rpop(self.key_name)
             
 if __name__ == "__main__":
