@@ -366,11 +366,23 @@ function do_update(data_in) {
             element.style.width = instruction_data[instr_i].width + 'px'; 
             element.style.height = instruction_data[instr_i].height + 'px'; 
             element.style.position = "absolute"; 
+            element.style.color = "black"; 
+            element.style.verticalAlign = "top";
+            element.style.textAlign = "center";
+            
+            element.style.fontSize = 8+'px';
+            element.style.whiteSpace = "pre";
+            element.style.wordWrap = "break-all";
+            element.style.fontFamily = "monospace, monospace"
+            element.style.lineHeight = 8+'px';
+            element.style.lineWidth = 8+'px';
+            
             element.style.top = instruction_data[instr_i].top + 'px'; 
             element.style.left = instruction_data[instr_i].left + 'px'; 
             element.style.backgroundColor = instruction_data[instr_i].backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].backgroundImage; 
             element.style.zIndex=instruction_data[instr_i].zIndex; 
+            element.textContent=instruction_data[instr_i].textContent; 
             
             synch_el_list.push(instruction_data[instr_i].id)
             synch_el_exists.push(1)
@@ -383,11 +395,23 @@ function do_update(data_in) {
             //element.style.height = instruction_data[instr_i].height + 'px'; 
             smooth_motion(element, instruction_data[instr_i].width, instruction_data[instr_i].height);
             element.style.position = "absolute"; 
+            element.style.color = "black"; 
+            element.style.verticalAlign = "top";
+            element.style.textAlign = "center";
+            
+            element.style.fontSize = 8+'px';
+            element.style.whiteSpace = "pre";
+            element.style.wordWrap = "break-all";
+            element.style.fontFamily = "monospace, monospace"
+            element.style.lineHeight = 8+'px';
+            element.style.lineWidth = 8+'px';
+  
             element.style.top = instruction_data[instr_i].top + 'px'; 
             element.style.left = instruction_data[instr_i].left + 'px'; 
             element.style.backgroundColor = instruction_data[instr_i].backgroundColor;
             element.style.backgroundImage = instruction_data[instr_i].backgroundImage; 
             element.style.zIndex=instruction_data[instr_i].zIndex; 
+            element.textContent=instruction_data[instr_i].textContent;
         }
     }
     
