@@ -28,8 +28,6 @@ class My_log:
             
             self.buffer_log += str(time_stamp) + ', ' + str(log_val.decode("utf-8")) + '\n'
             
-            print(self.buffer_log)
-            
             if (len(self.buffer_log) > 50000000) | (not(self.last_save_date == time.strftime("%Y%m%d", time.gmtime()))):
                 with open('log_data/' + self.key_name + '_' + time.strftime("%Y%m%d%H%M%S", time.gmtime()) + ".csv", 'w') as f:
                     f.write( self.buffer_log )
@@ -46,4 +44,5 @@ if __name__ == "__main__":
     while True:
         for log_item in log_list:
             log_item.update()
+            
     time.sleep(0.5)
