@@ -575,8 +575,6 @@ class Enemy_tower_1(Map_object_enemy):
         self.fire_timer = 0
         self.fire_interval = 20
         
-        self.orb_counter = 0
-        
         self.selected_target = None
         
     def get_image(self):
@@ -644,11 +642,6 @@ class Enemy_tower_1(Map_object_enemy):
                 )
                     
             self.fire_timer=0
-            
-            self.orb_counter = self.orb_counter+1
-            
-            if self.orb_counter > 100:
-                self.orb_counter = 0
             
     def update_state(self,dt):
         if (self.fire_timer<20):
