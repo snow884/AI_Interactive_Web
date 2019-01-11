@@ -1137,12 +1137,12 @@ class World_map:
         self.object_list = []
         
         self.population_counts = {
-                "Sphere_blue":100,
-                "Enemy_tower_1":100,
-                "Enemy_tower_2":50,
-                "Enemy_tower_3":30,
-                "Airship_1":200,
-                "Airship_2":50,
+                "Sphere_blue":200,
+                "Enemy_tower_1":300,
+                "Enemy_tower_2":100,
+                "Enemy_tower_3":50,
+                "Airship_1":300,
+                "Airship_2":80,
                 "Airship_3":20,
                 }
         

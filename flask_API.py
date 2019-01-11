@@ -31,7 +31,7 @@ def generate_capcha():
     
     numbers = ['1','2','3','4','5','6','7','8','9','0']
     alphabet_lowercase = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-    random_list = [random.choice(alphabet_lowercase+numbers) for i in range(0,4) ]
+    random_list = [random.choice(numbers) for i in range(0,4) ]
     str1 = ''.join(str(e) for e in random_list)
     return(str1)
 
@@ -68,7 +68,7 @@ def do_login():
     
     if (session['capcha_solution']==request.form['capcha']):
   
-        if ((len(request.form['user_id'])<8) & (len(request.form['user_id'])>20)) :
+        if ((len(request.form['user_id'])<8) | (len(request.form['user_id'])>20)) :
             return login_screen('short_user_id')
         else:
             player_id = request.form['user_id']

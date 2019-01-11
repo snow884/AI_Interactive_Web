@@ -16,23 +16,25 @@ class My_log:
     def __init__(self, key_name):
         self.key_name = key_name
         self.last_save_date = time.strftime("%Y%m%d", time.gmtime())
-    
+        self.buffer_log = ''
+        
     def update(self):
         
         log_val = log_queue.rpop(self.key_name)
-        buffer_log = ''
         
         while (not(log_val is None)):
         
             time_stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
             
-            buffer_log += str(time_stamp) + ', ' + str(log_val.decode("utf-8")) + '\n'
+            self.buffer_log += str(time_stamp) + ', ' + str(log_val.decode("utf-8")) + '\n'
             
-            if (len(buffer_log) > 50000000) | (not(self.last_save_date == time.strftime("%Y%m%d", time.gmtime()))):
+            print(self.buffer_log)
+            
+            if (len(self.buffer_log) > 50000000) | (not(self.last_save_date == time.strftime("%Y%m%d", time.gmtime()))):
                 with open('log_data/' + self.key_name + '_' + time.strftime("%Y%m%d%H%M%S", time.gmtime()) + ".csv", 'w') as f:
-                    f.write( buffer_log )
+                    f.write( self.buffer_log )
                     
-                buffer_log = ''
+                self.buffer_log = ''
             
             self.last_save_date = time.strftime("%Y%m%d", time.gmtime())
             log_val = log_queue.rpop(self.key_name)
