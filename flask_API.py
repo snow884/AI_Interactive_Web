@@ -66,37 +66,35 @@ def init_score_screen():
 @app.route('/login', methods=['GET', 'POST'])
 def do_login():
     
-    if (session['capcha_solution']==request.form['capcha']):
   
-        if ((len(request.form['user_id'])<8) | (len(request.form['user_id'])>20)) :
-            return login_screen('short_user_id')
-        else:
-            player_id = request.form['user_id']
-            
-            objects_new_raw = obj_data_queue.get(player_id)
-            if (objects_new_raw is None):
-                    
-                session['user_id'] = player_id    
-                session['objects'] = []
-                
-                user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 200)
-                
-                log_queue.lpush(
-                'website_log', 
-                json.dumps( 
-                        {
-                            'ip':request.environ['REMOTE_ADDR'],
-                            'func':'do_login',
-                            'user_id':player_id
-                        } 
-                    ) 
-                )
-        
-                return game_renderer()
-            else:
-                return login_screen('player_exists')
+    if ((len(request.form['user_id'])<8) | (len(request.form['user_id'])>20)) :
+        return login_screen('short_user_id')
     else:
-        return login_screen('incorrect_capcha')
+        player_id = request.form['user_id']
+        
+        objects_new_raw = obj_data_queue.get(player_id)
+        if (objects_new_raw is None):
+                
+            session['user_id'] = player_id    
+            session['objects'] = []
+            
+            user_data_queue.set('new_user',json.dumps( session['user_id'] ), px = 1000)
+            
+            log_queue.lpush(
+            'website_log', 
+            json.dumps( 
+                    {
+                        'ip':request.environ['REMOTE_ADDR'],
+                        'func':'do_login',
+                        'user_id':player_id
+                    } 
+                ) 
+            )
+    
+            return game_renderer()
+        else:
+            return login_screen('player_exists')
+
     
 @app.route('/get_capcha_img1', methods=['GET', 'POST'])
 def get_capcha_img():
@@ -120,7 +118,7 @@ def get_capcha_img():
 
 @app.route('/get_website_img/<img_name>', methods=['GET', 'POST'])
 def get_website_img(img_name):
-
+    
     log_queue.lpush(
             'website_log', 
             json.dumps( 
@@ -202,6 +200,13 @@ def get_preload_image_list():
     file_list = ['get_image/' + x for x in os.listdir('img/rotations/')]
     
     return( json.dumps( file_list) )
+
+@app.route("/get_all_players", methods=['GET', 'POST'])
+def get_all_players():
+    
+    user_list = user_data_queue.keys()
+    
+    return( json.dumps( user_list ) )
     
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

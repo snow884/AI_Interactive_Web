@@ -124,6 +124,36 @@ class Map_object_enemy(Map_object):
                 col_sz = col_sz
                 )
         self.get_objects_func = get_objects_func
+        
+        self.selected_target = None
+        
+    def identify_target_player(self):
+        objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
+            
+        payers_nearby_list = np.array( [el for el in objects_nearby_list if (
+                (el.object_class=='player')
+            )] )
+        
+        if (len(payers_nearby_list)>0):
+            self.selected_target = random.choice(payers_nearby_list)
+        else:
+            self.selected_target = None
+    
+    def rot_2_player_increment(self):
+        dist = pow(( self.world_x - self.selected_target.world_x )**2+( self.world_y - self.selected_target.world_y )**2,0.5)
+        
+        target_x = self.selected_target.world_x + dist/10*self.selected_target.world_vx
+        target_y = self.selected_target.world_y + dist/10*self.selected_target.world_vy
+        
+        my_angle = math.atan2( 
+        
+                ( self.world_y - target_y ),
+                ( self.world_x - target_x )
+                )/math.pi*180+360
+        
+        rotation_increment = ( ((my_angle) - int( (my_angle) / 360 )*360) - (self.rotation) )
+
+        return(rotation_increment)
 
 class Map_object_explosive(Map_object):
 
@@ -196,7 +226,7 @@ class Sphere_blue(Map_object_item):
             world_y = world_y, 
             sz_x = 50, 
             sz_y= 50, 
-            rotation = 0, 
+            rotation = int(random.randint(0,35)*10), 
             z_index = 10, 
             state = 'idle', 
             new_object_func = new_object_func, 
@@ -358,7 +388,6 @@ class Orb(Map_object_explosive):
                     0
                     )
                     )
-            
 
 class Cloud_white1(Map_object_decor):
     
@@ -563,7 +592,7 @@ class Enemy_tower_1(Map_object_enemy):
             world_vy = 0, 
             sz_x = 50, 
             sz_y = 50, 
-            rotation = 0, 
+            rotation = int(random.randint(0,35)*10), 
             z_index = 20, 
             state = 'idle', 
             new_object_func = new_object_func, 
@@ -587,32 +616,12 @@ class Enemy_tower_1(Map_object_enemy):
         if (self.search_timer > 20):
             self.search_timer = 0
             
-            objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
-            
-            payers_nearby_list = np.array( [el for el in objects_nearby_list if (
-                    (el.object_class=='player')
-                )] )
-            
-            if (len(payers_nearby_list)>0):
-                self.selected_target = payers_nearby_list[0]
-            else:
-                self.selected_target = None
+            self.identify_target_player()
                 
         else:
             if ( not(self.selected_target is None) ):
                 
-                dist = pow(( self.world_x - self.selected_target.world_x )**2+( self.world_y - self.selected_target.world_y )**2,0.5)
-                
-                target_x = self.selected_target.world_x + dist/10*self.selected_target.world_vx
-                target_y = self.selected_target.world_y + dist/10*self.selected_target.world_vy
-                
-                my_angle = math.atan2( 
-                
-                        ( self.world_y - target_y ),
-                        ( self.world_x - target_x )
-                        )/math.pi*180+360
-                
-                rotation_increment = ( ((my_angle) - int( (my_angle) / 360 )*360) - (self.rotation) )
+                rotation_increment = self.rot_2_player_increment()
                 
                 if (abs(rotation_increment)<10):
                     self.shoot()
@@ -789,7 +798,7 @@ class Airship_1(Map_object_enemy):
             world_vy = 0, 
             sz_x = 50, 
             sz_y = 50, 
-            rotation = 0, 
+            rotation = int(random.randint(0,35)*10), 
             z_index = 20, 
             state = 'idle', 
             new_object_func = new_object_func, 
@@ -809,33 +818,13 @@ class Airship_1(Map_object_enemy):
         if (self.search_timer > 20):
             self.search_timer = 0
             
-            objects_ids, objects_nearby_list = self.get_objects_func(self.world_x, self.world_y, 400, 400)
-            
-            payers_nearby_list = np.array( [el for el in objects_nearby_list if (
-                    (el.object_class=='player')
-                )] )
-            
-            if (len(payers_nearby_list)>0):
-                self.selected_target = payers_nearby_list[0]
-            else:
-                self.selected_target = None
+            self.identify_target_player()
                 
         else:
             if ( not(self.selected_target is None) ):
                 
-                dist = pow(( self.world_x - self.selected_target.world_x )**2+( self.world_y - self.selected_target.world_y )**2,0.5)
-                
-                target_x = self.selected_target.world_x + dist/10*self.selected_target.world_vx
-                target_y = self.selected_target.world_y + dist/10*self.selected_target.world_vy
-                
-                my_angle = math.atan2( 
-                
-                        ( self.world_y - target_y ),
-                        ( self.world_x - target_x )
-                        )/math.pi*180+360
-                
-                rotation_increment = ( ((my_angle) - int( (my_angle) / 360 )*360) - (self.rotation) )
-                
+                rotation_increment = self.rot_2_player_increment()
+                                
                 if (abs(rotation_increment)>10):
                     self.rotation = self.rotation + (rotation_increment>0)*5*dt - (rotation_increment<0)*5*dt
                 
@@ -850,7 +839,7 @@ class Airship_1(Map_object_enemy):
         return(Helper.get_rotated_img_string('airship1_orig', self.rotation))
         
     def collide(self, other_obj):
-        if not(other_obj.object_class in 'decorative'):
+        if not(other_obj.object_class in ['decorative', 'item']):
             self.state = 'deleted'
             
             self.new_object_func(Cloud_black3(
@@ -888,6 +877,151 @@ class Airship_3(Airship_1):
     def get_image(self):
         #return('url("get_image/airship3_orig_'+str(int(self.rotation/10)*10)+'.png")')   
         return(Helper.get_rotated_img_string('airship3_orig', self.rotation))
+
+
+class Jet_1(Map_object_enemy):
+
+    def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
+        
+        Map_object_enemy.__init__(
+            self, 
+            object_type = 'Jet_1', 
+            world_x = world_x, 
+            world_y = world_y, 
+            world_vx = 0, 
+            world_vy = 0, 
+            sz_x = 50, 
+            sz_y = 50, 
+            rotation = int(random.randint(0,35)*10), 
+            z_index = 20, 
+            state = 'idle', 
+            new_object_func = new_object_func, 
+            get_objects_func = get_objects_func,
+            col_sz = 25
+            )
+        
+        self.search_timer = 0
+        self.fire_timer = 0
+        self.cloud_timer = 0
+        
+        self.fire_interval=20
+        
+        self.selected_target = None
+        
+        self.speed = 1
+        
+    def update_pos(self,dt):
+        self.search_timer = self.search_timer + dt
+        
+        self.cloud_timer = self.cloud_timer + dt
+        
+        if (self.cloud_timer>5):
+            self.cloud_timer = 0
+            self.new_object_func(
+                    Cloud_white2(
+                        self.world_x+math.cos(self.rotation/360*2*math.pi)*30, 
+                        self.world_y+math.sin(self.rotation/360*2*math.pi)*30, 
+                        math.cos(self.rotation/360*2*math.pi)*1, 
+                        math.sin(self.rotation/360*2*math.pi)*1 
+                    )
+                )
+        
+        if (self.search_timer > 20):
+            self.search_timer = 0
+            
+            self.identify_target_player()
+            
+        else:
+            if ( not(self.selected_target is None) ):
+                
+                rotation_increment = self.rot_2_player_increment()
+                                
+                if (abs(rotation_increment)<10):
+                    self.shoot()
+                else:
+                    self.rotation = self.rotation + (rotation_increment>0)*5*dt - (rotation_increment<0)*5*dt
+                
+            self.world_vx = - math.cos(self.rotation/360*2*math.pi)*self.speed
+            self.world_vy = - math.sin(self.rotation/360*2*math.pi)*self.speed
+            
+            self.world_x = self.world_x + self.world_vx*dt
+            self.world_y = self.world_y + self.world_vy*dt
+    
+    def update_state(self,dt):
+        if (self.fire_timer<20):
+            self.fire_timer = self.fire_timer + dt
+                    
+    def get_image(self):
+        #return('url("get_image/airship1_orig_'+str(int(self.rotation/10)*10)+'.png")') 
+        return(Helper.get_rotated_img_string('jet1_orig', self.rotation))
+        
+    def collide(self, other_obj):
+        if not(other_obj.object_class in ['decorative', 'item']):
+            self.state = 'deleted'
+            
+            self.new_object_func(Cloud_black3(
+                    self.world_x, 
+                    self.world_y, 
+                    -3, 
+                    0
+                    )
+                    )
+
+            self.new_object_func(Explosion3(
+                    self.world_x, 
+                    self.world_y, 
+                    -2, 
+                    0
+                    )
+                    )
+            
+    def shoot(self):
+        
+        if (not(self.fire_timer<self.fire_interval)):
+            
+            self.new_object_func(
+                    Orb( 
+                            self.world_x - math.cos(self.rotation/360*2*math.pi)*40, 
+                            self.world_y - math.sin(self.rotation/360*2*math.pi)*40,
+                            - math.cos(self.rotation/360*2*math.pi)*10, 
+                            - math.sin(self.rotation/360*2*math.pi)*10,
+                            self.new_object_func
+                        )
+                    )
+            self.new_object_func(
+                Cloud_black1(
+                    self.world_x - math.cos(self.rotation/360*2*math.pi)*40, 
+                    self.world_y - math.sin(self.rotation/360*2*math.pi)*40,
+                    -3, 
+                    0
+                    )
+                )
+                    
+            self.fire_timer=0
+
+class Jet_2(Jet_1):
+    def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
+        Jet_1.__init__(self, world_x, world_y, new_object_func, get_objects_func )
+        self.object_type = 'Jet_2'
+        
+        self.speed = 3
+        self.fire_interval=10
+        
+    def get_image(self):
+        #return('url("get_image/airship3_orig_'+str(int(self.rotation/10)*10)+'.png")')   
+        return(Helper.get_rotated_img_string('jet2_orig', self.rotation))
+
+class Jet_3(Jet_1):
+    def __init__(self, world_x, world_y, new_object_func, get_objects_func ):
+        Jet_1.__init__(self, world_x, world_y, new_object_func, get_objects_func )
+        self.object_type = 'Jet_3'
+        
+        self.speed = 4
+        self.fire_interval=5
+        
+    def get_image(self):
+        #return('url("get_image/airship3_orig_'+str(int(self.rotation/10)*10)+'.png")')   
+        return(Helper.get_rotated_img_string('jet3_orig', self.rotation))
 
 class Text_label(Map_object_decor):
     
@@ -935,7 +1069,7 @@ class Player(Map_object_player):
                 world_vy = world_vy, 
                 sz_x = 50, 
                 sz_y = 50, 
-                rotation = 0, 
+                rotation = int(random.randint(0,35)*10), 
                 z_index = 11, 
                 state = 'online', 
                 new_object_func = new_object_func, 
@@ -1130,13 +1264,16 @@ class World_map:
         self.object_list = []
         
         self.population_counts = {
-                "Sphere_blue":200,
-                "Enemy_tower_1":300,
-                "Enemy_tower_2":100,
-                "Enemy_tower_3":50,
-                "Airship_1":300,
-                "Airship_2":80,
-                "Airship_3":20,
+                "Sphere_blue":100,
+                "Enemy_tower_1":100,
+                "Enemy_tower_2":50,
+                "Enemy_tower_3":30,
+                "Airship_1":100,
+                "Airship_2":50,
+                "Airship_3":30,
+                "Jet_1":100,
+                "Jet_2":50,
+                "Jet_3":30,
                 }
         
         for x_id in range(0,100):
@@ -1220,7 +1357,35 @@ class World_map:
                             self.get_objects
                             )
                     )   
-    
+
+        if (object_type=='Jet_1'):
+            self.object_list.append(
+                    Jet_1(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        if (object_type=='Jet_2'):
+            self.object_list.append(
+                    Jet_2( 
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+        if (object_type=='Jet_3'):
+            self.object_list.append(
+                    Jet_3(
+                            random.randint(1,self.sz_x), 
+                            random.randint(1,self.sz_y),
+                            self.add_object,
+                            self.get_objects
+                            )
+                    )   
+
     def balance_population(self):
         
         object_type_list = [el.object_type for el in self.object_list if not(el.object_class in ['decorative','player','explosive'])]
