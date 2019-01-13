@@ -157,7 +157,7 @@ class Map_object_enemy(Map_object):
 
 class Map_object_explosive(Map_object):
 
-    def __init__(self, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, col_sz):
+    def __init__(self, object_type, world_x, world_y, world_vx, world_vy, sz_x, sz_y, rotation, z_index, state, new_object_func, add_score_func, col_sz):
         Map_object.__init__(
                 self,
                 object_type = object_type, 
@@ -174,6 +174,7 @@ class Map_object_explosive(Map_object):
                 new_object_func = new_object_func, 
                 col_sz = col_sz
                 )
+        self.add_score_func = add_score_func
 
 class Map_object_item(Map_object):
 
@@ -348,7 +349,7 @@ class Health_collected_floater(Map_object_decor):
     
 class Orb(Map_object_explosive):
     
-    def __init__(self, world_x, world_y, world_vx, world_vy, new_object_func ):
+    def __init__(self, world_x, world_y, world_vx, world_vy, new_object_func, add_score_func ):
         
         Map_object_explosive.__init__(
             self, 
@@ -362,8 +363,9 @@ class Orb(Map_object_explosive):
             rotation = 0, 
             z_index = 12, 
             state = 'fired', 
-            new_object_func = new_object_func , 
-            col_sz = 5
+            new_object_func = new_object_func,
+            add_score_func = add_score_func,
+            col_sz = 5,
          )
         
         self.timer = 0 
@@ -388,6 +390,12 @@ class Orb(Map_object_explosive):
                     0
                     )
                     )
+            
+            if (
+                (other_obj.object_class in ['enemy','player']) 
+                & (not(self.add_score_func is None))
+                ):
+                self.add_score_func()
 
 class Cloud_white1(Map_object_decor):
     
@@ -638,7 +646,8 @@ class Enemy_tower_1(Map_object_enemy):
                             self.world_y - math.sin(self.rotation/360*2*math.pi)*40,
                             - math.cos(self.rotation/360*2*math.pi)*10, 
                             - math.sin(self.rotation/360*2*math.pi)*10,
-                            self.new_object_func
+                            self.new_object_func,
+                            None
                         )
                     )
             self.new_object_func(
@@ -985,7 +994,8 @@ class Jet_1(Map_object_enemy):
                             self.world_y - math.sin(self.rotation/360*2*math.pi)*40,
                             - math.cos(self.rotation/360*2*math.pi)*10, 
                             - math.sin(self.rotation/360*2*math.pi)*10,
-                            self.new_object_func
+                            self.new_object_func,
+                            None
                         )
                     )
             self.new_object_func(
@@ -1081,6 +1091,7 @@ class Player(Map_object_player):
         self.orb_timer = 0
         self.fire_timer = 0
         self.health = 8
+        self.score = 0
         
         self.new_object_func(Text_label(self, self.object_id))
         
@@ -1088,11 +1099,12 @@ class Player(Map_object_player):
             'gameplay_log', 
             json.dumps( 
                     {
-                        'action':'login',
-                        'player_id':object_id
+                        'player_id': self.object_id,
+                        'action': 'creation',
+                        'obj_data': []
                     } 
                 ) 
-            )
+        )
         
     def get_image(self):
         #return('url("get_image/plane_orig_'+str(int(self.rotation/10)*10)+'.png")')
@@ -1146,7 +1158,8 @@ class Player(Map_object_player):
                             self.world_y - math.sin(self.rotation/360*2*math.pi)*50,
                             - math.cos(self.rotation/360*2*math.pi)*10, 
                             - math.sin(self.rotation/360*2*math.pi)*10,
-                            self.new_object_func
+                            self.new_object_func,
+                            self.add_score
                         )
                     )
             
@@ -1174,7 +1187,7 @@ class Player(Map_object_player):
         if (self.fire_timer<20):
             self.fire_timer = self.fire_timer + dt
         
-        if (self.no_input_count*dt > 10):
+        if (self.no_input_count*dt > 30):
             self.death('💤 U were logged off due to inactivity!')
             
     def death(self, message):
@@ -1187,36 +1200,38 @@ class Player(Map_object_player):
         data["infobanner_text"] = '\r\n \r\n \r\n' + message
         
         obj_data_queue.set(self.object_id ,json.dumps(data), px = 200 )
-
+            
         log_queue.lpush(
             'gameplay_log', 
             json.dumps( 
                     {
-                        'action':'logout',
                         'player_id': self.object_id,
-                        'message':message
+                        'action': 'death',
+                        'obj_data': []
                     } 
                 ) 
             )
-            
+        
     def sustain_damage(self, damage):
         self.health = self.health - damage
 
-        self.new_object_func(Cloud_black3(
+        self.new_object_func(
+            Cloud_black3(
                 self.world_x, 
                 self.world_y, 
                 -3, 
                 0
                 )
-                )
+            )
 
-        self.new_object_func(Explosion3(
+        self.new_object_func(
+            Explosion3(
                 self.world_x, 
                 self.world_y, 
                 -2, 
                 0
                 )
-                )
+            )
     
         if (self.health<=0):
             self.death("😵🔫 You've been killed")
@@ -1225,6 +1240,9 @@ class Player(Map_object_player):
         self.health = self.health + heanth_added
         if (self.health>8):
             self.health = 8
+    
+    def add_score(self):
+        self.score += 1 
     
     def collide(self, other_obj):
         if ( 
@@ -1246,9 +1264,10 @@ class Player(Map_object_player):
        
         str_out='\r\n'
         health_bar_string = ''.join(['▓'*(i<self.health)+' '*(i>=self.health) for i in range(0,8)])
-        str_out += 'HEALTH ' + health_bar_string + ' \r\n'
+        str_out += 'HEALTH ' + health_bar_string + ' \r\n \r\n'
         level_bar_string = ''.join(['▓'*(i<(self.fire_timer/20)*8)+' '*(i>=(self.fire_timer/20)*8) for i in range(0,8)])
-        str_out += 'CHARGE ' + level_bar_string + ' \r\n'    
+        str_out += 'CHARGE ' + level_bar_string + ' \r\n \r\n'  
+        str_out += 'SCORE  ' + str(self.score) + ' \r\n \r\n' 
         
         return(str_out)
         
@@ -1430,7 +1449,7 @@ class World_map:
             new_player_id = str(json.loads( new_player_id_raw) )
             if (not(new_player_id in [el.object_id for el in self.object_list if (el.object_class=='player')])):
                 self.add_object( Player(new_player_id, 2500, 2500, 0, 0, self.add_object ) )
-                
+            
         #send players their data
         
         player_obj_list = [el for el in self.object_list if (el.object_class=='player')]
@@ -1468,6 +1487,17 @@ class World_map:
             data["infobanner_text"] = 'None'
             
             obj_data_queue.set(player_obj.object_id ,json.dumps(data), px = 200 )
+            
+            log_queue.lpush(
+                'gameplay_log', 
+                json.dumps( 
+                        {
+                            'player_id': player_obj.object_id,
+                            'action': 'obj_update',
+                            'obj_data': data
+                        } 
+                    ) 
+                )
             
         #handle colidions
         

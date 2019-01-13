@@ -27,13 +27,12 @@ app = Flask(__name__)
 app.debug = True
 app.secret_key = "super secret key"
 
-def generate_capcha():
+def rand_player_name():
     
     numbers = ['1','2','3','4','5','6','7','8','9','0']
-    alphabet_lowercase = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-    random_list = [random.choice(numbers) for i in range(0,4) ]
+    random_list = [random.choice(numbers) for i in range(0,6) ]
     str1 = ''.join(str(e) for e in random_list)
-    return(str1)
+    return('player_' + str1 + '😶')
 
 def get_instr_update(player_id):
     
@@ -50,7 +49,7 @@ def update():
     if request.method == "POST":
         
         control_data = request.get_json()
-        con_data_queue.set(str(session['user_id']), json.dumps( control_data ), px = 1000 )
+        con_data_queue.set(str(session['user_id']), json.dumps( control_data ), px = 200 )
         
         instruction_list = get_instr_update( session['user_id'] )
         
@@ -74,7 +73,7 @@ def do_login():
         
         objects_new_raw = obj_data_queue.get(player_id)
         if (objects_new_raw is None):
-                
+            
             session['user_id'] = player_id    
             session['objects'] = []
             
@@ -147,6 +146,8 @@ def game_renderer():
 @app.route("/login_screen/<warning_type>", methods=['GET', 'POST'])
 def login_screen(warning_type):
     
+    prefilled_player_name = rand_player_name()
+    
     log_queue.lpush(
             'website_log', 
             json.dumps( 
@@ -159,13 +160,13 @@ def login_screen(warning_type):
             )
     
     if (warning_type=='initial_ok'):
-        return render_template('login.html')
+        return render_template('login.html',prefilled_player_name=prefilled_player_name)
     if (warning_type=='short_user_id'):
-        return render_template('login.html',context_info = "Your username must have 8-20 characters!")
+        return render_template('login.html',prefilled_player_name=prefilled_player_name,context_info = "Your username must have 8-20 characters!")
     if (warning_type=='incorrect_capcha'):
-        return render_template('login.html',context_info = "The capcha you have typed in is incorrect! Are you a robot ?")
+        return render_template('login.html',prefilled_player_name=prefilled_player_name,context_info = "The capcha you have typed in is incorrect! Are you a robot ?")
     if (warning_type=='game_exit'):
-        return render_template('login.html',context_info = "The game exited.")
+        return render_template('login.html',prefilled_player_name=prefilled_player_name,context_info = "The game exited.")
 
 @app.route("/frame_set", methods=['GET', 'POST'])
 def frame_set():
