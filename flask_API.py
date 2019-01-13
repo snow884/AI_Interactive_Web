@@ -12,8 +12,6 @@ from flask import send_file
 
 import json, os
 
-from captcha.image import ImageCaptcha
-
 import redis
 
 import random
@@ -94,26 +92,6 @@ def do_login():
         else:
             return login_screen('player_exists')
 
-    
-@app.route('/get_capcha_img1', methods=['GET', 'POST'])
-def get_capcha_img():
-    
-    image = ImageCaptcha()
-    session['capcha_solution'] = generate_capcha()
-    data = image.generate(session['capcha_solution'])
-    
-    log_queue.lpush(
-            'website_log', 
-            json.dumps( 
-                    {
-                        'ip':request.environ['REMOTE_ADDR'],
-                        'func':'get_capcha_img',
-                        'capcha_solution':session['capcha_solution']
-                    } 
-                ) 
-            )
-            
-    return send_file(data, mimetype='image/png')
 
 @app.route('/get_website_img/<img_name>', methods=['GET', 'POST'])
 def get_website_img(img_name):

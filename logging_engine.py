@@ -26,7 +26,7 @@ class My_log:
         log_val = log_queue.rpop(self.key_name)
         
         while (not(log_val is None)):
-        
+            
             time_stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
             
             self.buffer_log += str(time_stamp) + ', ' + str(log_val.decode("utf-8")) + '\n'
@@ -54,7 +54,7 @@ class Recorder:
         while not(raw_activity is None):
         
             act_data = json.loads(raw_activity)
-            print(act_data['action'])
+            
             if (act_data['action'] == 'creation'):
                 self.add_player(act_data['player_id'])
                 
