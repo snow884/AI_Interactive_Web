@@ -32,7 +32,7 @@ def rand_player_name():
     numbers = ['1','2','3','4','5','6','7','8','9','0']
     random_list = [random.choice(numbers) for i in range(0,6) ]
     str1 = ''.join(str(e) for e in random_list)
-    return('player_' + str1 + '😶')
+    return('player_' + str1)
 
 def get_instr_update(player_id):
     
