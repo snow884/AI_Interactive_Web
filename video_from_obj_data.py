@@ -131,8 +131,6 @@ def read_json():
                             
                             blank_image = my_overlay(blank_image,img_stamp,int((x_old-x)*oversample_id/oversample+x),int((y_old-y)*oversample_id/oversample+y))
                 
-                
-                
                 blank_image = write_scoreboard(blank_image, obj_frame['status_text'])
                 
     #            cv2.imwrite('log_data/game_recordings/test_img.png', blank_image)

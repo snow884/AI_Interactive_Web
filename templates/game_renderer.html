@@ -100,7 +100,6 @@ function preload() {
 
             imageArray = JSON.parse(this.responseText)
             preload_images(imageArray)
-
             
         } else {
             result.innerHTML = "error...";
@@ -112,22 +111,44 @@ function preload() {
     req.send([]);
 }
 
-images = []
+var my_preload_timer;
+images = [];
+preload_image_index = 0;
 
 function preload_images(imageArray)
 {
     document.getElementById("myInfobanner").textContent = "\r\n \r\n \r\n Loading images";
     document.getElementById("myInfobanner").zIndex = 2000
+
     if (document.images) 
     {
-        for(i=0; i<=imageArray.length-1; i++) 
+        my_preload_timer = setInterval(preload_refresh, minor_refresh);
+        function preload_refresh() 
         {
-            images[i] = new Image();
-            images[i].src = "url("+imageArray[i]+")"; 
             
+            if (i<=imageArray.length-1) 
+            {
+        
+                images[i] = document.createElement("DIV"); 
+                document.getElementById("myContainer").appendChild(images[i]);
+                images[i].setAttribute("id", 'preload_image_'+i);
+                images[i].style.width = '1px'; 
+                images[i].style.height = '1px'; 
+                images[i].style.position = "absolute"; 
+                images[i].style.color = "black"; 
+                images[i].style.verticalAlign = "top";
+                images[i].style.textAlign = "center";
+                images[i].style.backgroundImage  = "url("+imageArray[i]+")";    
+                
+                preload_image_index = preload_image_index + 1;
+            }
+            else
+            {
+                clearInterval(my_preload_timer);
+                document.getElementById("myInfobanner").zIndex = 1;
+            }
         }
     }
-    document.getElementById("myInfobanner").zIndex = 1
 }
 
 
@@ -470,7 +491,7 @@ function myAnimation()
   return(my_timer)
 }
 
-//preload()
+preload()
 global_timer = myAnimation()
 
 </script>
